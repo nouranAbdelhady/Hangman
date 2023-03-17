@@ -3,30 +3,32 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
+
     public static void main(String[] args) {
-        String name = "empty";
-        String reply = "empty";
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter your name (Please enter your name to join the chat): ");
-        reply = sc.nextLine();
-        name = reply;
 
         try (Socket socket = new Socket("localhost", 5000)) {
             PrintWriter cout = new PrintWriter(socket.getOutputStream(), true);
 
             ClientHandler threadClient = new ClientHandler(socket);
-            new Thread(threadClient).start(); // start thread to receive message
+            new Thread(threadClient).start(); // start thread to receive messages from server
 
-            cout.println(reply + ": has joined!");
+            String name = "empty";
+            String reply = "empty";
+            Scanner scanner = new Scanner(System.in);
+            //System.out.println("Enter your name (Please enter your name to join the chat): ");
+            reply = scanner.nextLine();
+            name = reply;
+
+            cout.println(reply + ": has joined!"); // send message to server
             do {
                 String message = (name + " : ");
-                reply = sc.nextLine();
-                if (reply.equals("logout")) {
-                    cout.println("logout");
+                reply = scanner.nextLine();
+                if (reply.equals("-")) {    // Client can send message to server until he/she enters '-'
+                    cout.println("-");
                     break;
                 }
                 cout.println(message + reply);
-            } while (!reply.equals("logout"));
+            } while (true);
         } catch (Exception e) {
             System.out.println(e.getStackTrace());
         }

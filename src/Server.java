@@ -4,17 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Server {
-
     public static void main(String[] args) {
         ArrayList<Socket> clients = new ArrayList<>();
         HashMap<Socket, String> clientNameList = new HashMap<Socket, String>();
-        try (ServerSocket serversocket = new ServerSocket(5000)) {
+        try (ServerSocket serversocket = new ServerSocket(5000)) {      // Create server socket
             System.out.println("[SERVER] Started...");
             while (true) {
-                Socket socket = serversocket.accept();
-                clients.add(socket);
-                ThreadServer ThreadServer = new ThreadServer(socket, clients, clientNameList);
-                ThreadServer.start();
+                Socket socket = serversocket.accept();  // Accept new client
+                clients.add(socket);   // Add client to list
+
+                // Create new thread for each client
+                ServerHandler ThreadServer = new ServerHandler(socket, clients, clientNameList);
+                ThreadServer.start();   // Start thread
             }
         } catch (Exception e) {
             System.out.println(e.getStackTrace());

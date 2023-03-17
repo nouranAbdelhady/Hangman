@@ -5,23 +5,23 @@ import java.net.Socket;
 import java.net.SocketException;
 
 /**
- * Thread for clients
+ * This class will handle all the messages sent from server to client.
  */
 public class ClientHandler implements Runnable {
 
-    private Socket socket;
-    private BufferedReader cin;
+    private final Socket socket;
+    private final BufferedReader input;
 
     public ClientHandler(Socket socket) throws IOException {
         this.socket = socket;
-        this.cin = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
     @Override
     public void run() {
         try {
             while (true) {
-                String message = cin.readLine();
+                String message = input.readLine();
                 System.out.println(message);
             }
         } catch (SocketException e) {
@@ -30,7 +30,7 @@ public class ClientHandler implements Runnable {
             System.out.println(exception);
         } finally {
             try {
-                cin.close();
+                input.close();
             } catch (Exception exception) {
                 System.out.println(exception);
             }
