@@ -1,2 +1,8 @@
 # Project exclude paths
 /out/
+/Assignment1.iml
+/.idea/jpa-buddy.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/.gitignore
