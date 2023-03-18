@@ -3,6 +3,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 /**
  * This class is used to handle client connection and messages.
@@ -15,10 +16,12 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
     private ArrayList<Socket> clients;      // List of clients connected to server
     private HashMap<Socket, String> clientNameList;     // List of clients' name connected to server (to help with output message)
 
+    private HashMap<String, User> users = new HashMap<>();      // List of users loaded from credentials file
 
-    //load files
-    Lookup lookup;
-    Credentials credentials;
+    // loaded from files
+    private Lookup lookup;
+    private Credentials credentials;
+    private GameConfig gameConfig;
 
     public ServerHandler(Socket socket, ArrayList<Socket> clients, HashMap<Socket, String> clientNameList) throws IOException {
         this.currentSocket = socket;
@@ -26,8 +29,13 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
         this.clientNameList = clientNameList;
 
         // Load files
-        lookup = new Lookup();
-        credentials = new Credentials();
+        this.lookup = new Lookup();
+        this.credentials = new Credentials();
+        this.users = (HashMap<String, User>) credentials.getUserMap();      // assign users that are loaded from credentials file
+        this.gameConfig = new GameConfig();
+
+        // Load score file and update scores for each user
+        this.loadScore();
     }
 
     @Override
@@ -102,6 +110,20 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
         }
     }
 
+    public void loadScore() throws FileNotFoundException {
+        FileInputStream file=new FileInputStream("./src/Files/score.txt");
+        Scanner sc=new Scanner(file);    //file to be scanned
+        //returns true if there is another line to read
+        while(sc.hasNextLine())
+        {
+            String line=sc.nextLine();
+            // separate username and score
+            String[] parts = line.split("-");
+            this.users.get(parts[0]).setScore(Integer.parseInt(parts[1]));     // Update score
+        }
+        sc.close();     //closes the scanner
+    }
+
     private void sendMessageToAllClients(Socket sender, String message) throws IOException {
         BufferedWriter writer;
 
@@ -131,4 +153,10 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
         return reader.readLine();
     }
 
+    public void previewUsers() {
+        System.out.println("Users: ");
+        for (String key : users.keySet()) {
+            System.out.println(key + " " + users.get(key).getScore());
+        }
+    }
 }

@@ -1,0 +1,3 @@
+Attempts=8
+Min=2
+Max=4
