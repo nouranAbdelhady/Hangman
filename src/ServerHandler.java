@@ -29,11 +29,12 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
     @Override
     public void run() {
         try {
+            String welcome="Welcome to Hangman! \n";
+            sendMessageToClient(currentSocket, welcome);
             // When first connected, menu is previewed to client
             // Handle client messages
             while (true){
-                String menu = "Welcome to Hangman! \n" +
-                        "1- Register \n" +
+                String menu = "1- Register \n" +
                         "2- Login";
                 sendMessageToClient(currentSocket, menu);
                 String option = getClientMessage(currentSocket);     // Read option sent from client
