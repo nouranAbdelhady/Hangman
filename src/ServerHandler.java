@@ -26,39 +26,48 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
         // When first connected, menu is previewed to client
         try {
             String menu = "Welcome to Hangman! \n" +
-                    "Enter your name: ";
+                    "1- Register \n" +
+                    "2- Login \n";
             sendMessageToClient(currentSocket, menu);
 
             // Handle client messages
-            try {
-                while (true) {
-                    String outputString = getClientMessage(currentSocket);     // Read message sent from client
-                    if (outputString.equals("-")) {     //'-' means that client chose to disconnect
-                        throw new SocketException();        // Throw exception to handle client disconnection
-                    }
-                    if (!clientNameList.containsKey(currentSocket)) {      // If client name is not in the list, add it
-                        String[] messageString = outputString.split(":", 2);    // Split message to get client name. Message format: "name: message"
-                        clientNameList.put(currentSocket, messageString[0]);      // Add client name to list
-                        System.out.println(messageString[0]+messageString[1]);    // Print message to server
-                        sendMessageToAllClients(currentSocket, messageString[0] + messageString[1]);    // Send message to all clients
-                    } else {
-                        System.out.println(outputString);  // Print message to server (if name was in the list)
-                        sendMessageToAllClients(currentSocket, outputString);
-                    }
+            while (true){
+                String option = getClientMessage(currentSocket);     // Read option sent from client
+                if (option.equals("-")) {     //'-' means that client chose to disconnect
+                    throw new SocketException();        // Throw exception to handle client disconnection
                 }
-            } catch (SocketException e) {
-                String printMessage = clientNameList.get(currentSocket) + " got disconnected";
-                System.out.println(printMessage);       // Print message to server
-                try {
-                    sendMessageToAllClients(currentSocket, printMessage);      // Send message to all clients that client disconnected
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+                switch (option){
+                    case "1":
+                        // Register
+                        String registerMenu = "Registration: \n" +
+                                "Enter your name: ";
+                        sendMessageToClient(currentSocket, registerMenu);
+                        String name = getClientMessage(currentSocket);
+                        sendMessageToClient(currentSocket, "Enter username");
+                        // TODO: Check if username is already taken
+                        String username = getClientMessage(currentSocket);
+                        sendMessageToClient(currentSocket, "Enter password");
+                        String password = getClientMessage(currentSocket);
+                        //register(name, username, password);     //save user to file
+                        break;
+                    case "2":
+                        // Login
+                        break;
+                    default:
+                        sendMessageToClient(currentSocket, "Invalid option. Please try again.");
+                        break;
                 }
-                clients.remove(currentSocket);
-                clientNameList.remove(currentSocket);
-            } catch (Exception e) {
-                System.out.println(e.getStackTrace());
             }
+        } catch (SocketException e) {
+            String printMessage = clientNameList.get(currentSocket) + " got disconnected";
+            System.out.println(printMessage);       // Print message to server
+            try {
+                sendMessageToAllClients(currentSocket, printMessage);      // Send message to all clients that client disconnected
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            clients.remove(currentSocket);
+            clientNameList.remove(currentSocket);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -92,4 +101,5 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
         reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
         return reader.readLine();
     }
+
 }
