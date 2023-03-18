@@ -27,12 +27,13 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
         try {
             String menu = "Welcome to Hangman! \n" +
                     "1- Register \n" +
-                    "2- Login \n";
+                    "2- Login";
             sendMessageToClient(currentSocket, menu);
 
             // Handle client messages
             while (true){
                 String option = getClientMessage(currentSocket);     // Read option sent from client
+                System.out.println("Client chose: " + option);      // Print message to server
                 if (option.equals("-")) {     //'-' means that client chose to disconnect
                     throw new SocketException();        // Throw exception to handle client disconnection
                 }
@@ -52,6 +53,10 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
                         break;
                     case "2":
                         // Login
+                        String loginMenu = "Login: \n" +
+                                "Enter your username: ";
+                        sendMessageToClient(currentSocket, loginMenu);
+                        String usernameLogin = getClientMessage(currentSocket);
                         break;
                     default:
                         sendMessageToClient(currentSocket, "Invalid option. Please try again.");

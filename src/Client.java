@@ -14,22 +14,15 @@ public class Client {
             ClientHandler threadClient = new ClientHandler(server);
             new Thread(threadClient).start(); // start thread to receive messages from server
 
-            String name = "empty";
-            String reply = "empty";
             Scanner scanner = new Scanner(System.in);
-            //System.out.println("Enter your name (Please enter your name to join the chat): ");
-            reply = scanner.nextLine();
-            name = reply;
-
-            threadClient.sendToServer(reply + ": has joined!"); // send message to server
+            String reply;
             do {
-                String message = (name + " : ");
                 reply = scanner.nextLine();
                 if (reply.equals("-")) {    // Client can send message to server until he/she enters '-'
                     threadClient.sendToServer("-");
                     break;
                 }
-                threadClient.sendToServer(message + reply);
+                threadClient.sendToServer(reply);
             } while (true);
 
             // Disconnect from server
