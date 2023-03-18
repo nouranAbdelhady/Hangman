@@ -17,13 +17,17 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
 
 
     //load files
-    Lookup lookup = new Lookup();
-    Credentials credentials = new Credentials();
+    Lookup lookup;
+    Credentials credentials;
 
     public ServerHandler(Socket socket, ArrayList<Socket> clients, HashMap<Socket, String> clientNameList) throws IOException {
         this.currentSocket = socket;
         this.clients = clients;
         this.clientNameList = clientNameList;
+
+        // Load files
+        lookup = new Lookup();
+        credentials = new Credentials();
     }
 
     @Override
@@ -49,9 +53,8 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
                         sendMessageToClient(currentSocket, registerMenu);
                         String name = getClientMessage(currentSocket);
                         sendMessageToClient(currentSocket, "Enter username");
-                        // TODO: Check if username is already taken
                         String username = getClientMessage(currentSocket);
-                        while (!credentials.isUniqueUsername(username)) {
+                        while (!credentials.isUniqueUsername(username)) {       // username must be unique
                             sendMessageToClient(currentSocket, "Username already taken. Please try again.");
                             username = getClientMessage(currentSocket);
                         }
@@ -87,7 +90,8 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
             String printMessage = clientNameList.get(currentSocket) + " got disconnected";
             System.out.println(printMessage);       // Print message to server
             try {
-                sendMessageToAllClients(currentSocket, printMessage);      // Send message to all clients that client disconnected
+                // Should only send to team members
+                sendMessageToAllClients(currentSocket, printMessage);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
