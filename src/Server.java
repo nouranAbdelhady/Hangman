@@ -15,6 +15,9 @@ public class Server {
 
             // Load files
             Lookup lookup = new Lookup();
+            Credentials credentials = new Credentials();
+            credentials.printContent();
+            credentials.addUser("te","test2","password11");
             System.out.println("[SERVER] Started...");
 
             while (true) {
