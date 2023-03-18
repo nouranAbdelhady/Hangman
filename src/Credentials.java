@@ -74,6 +74,5 @@ public class Credentials {
         FileWriter myWriterScore = new FileWriter("./src/Files/score.txt", true);
         myWriterScore.write(username + "-" + 0+"\n");
         myWriterScore.close();
-        System.out.println("Successfully added to file.");
     }
 }

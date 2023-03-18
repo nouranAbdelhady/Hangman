@@ -12,14 +12,7 @@ public class Server {
 
         try {
             ServerSocket serversocket = new ServerSocket(5000);  // Create server socket
-
-            // Load files
-            Lookup lookup = new Lookup();
-            Credentials credentials = new Credentials();
-            credentials.printContent();
-            credentials.addUser("te","test2","password11");
             System.out.println("[SERVER] Started...");
-
             while (true) {
                 Socket socket = serversocket.accept();  // Accept new client
                 clients.add(socket);   // Add client to list

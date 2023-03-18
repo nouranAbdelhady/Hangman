@@ -15,6 +15,11 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
     private ArrayList<Socket> clients;      // List of clients connected to server
     private HashMap<Socket, String> clientNameList;     // List of clients' name connected to server (to help with output message)
 
+
+    //load files
+    Lookup lookup = new Lookup();
+    Credentials credentials = new Credentials();
+
     public ServerHandler(Socket socket, ArrayList<Socket> clients, HashMap<Socket, String> clientNameList) throws IOException {
         this.currentSocket = socket;
         this.clients = clients;
@@ -23,17 +28,15 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
 
     @Override
     public void run() {
-        // When first connected, menu is previewed to client
         try {
-            String menu = "Welcome to Hangman! \n" +
-                    "1- Register \n" +
-                    "2- Login";
-            sendMessageToClient(currentSocket, menu);
-
+            // When first connected, menu is previewed to client
             // Handle client messages
             while (true){
+                String menu = "Welcome to Hangman! \n" +
+                        "1- Register \n" +
+                        "2- Login";
+                sendMessageToClient(currentSocket, menu);
                 String option = getClientMessage(currentSocket);     // Read option sent from client
-                System.out.println("Client chose: " + option);      // Print message to server
                 if (option.equals("-")) {     //'-' means that client chose to disconnect
                     throw new SocketException();        // Throw exception to handle client disconnection
                 }
@@ -47,9 +50,14 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
                         sendMessageToClient(currentSocket, "Enter username");
                         // TODO: Check if username is already taken
                         String username = getClientMessage(currentSocket);
+                        while (!credentials.isUniqueUsername(username)) {
+                            sendMessageToClient(currentSocket, "Username already taken. Please try again.");
+                            username = getClientMessage(currentSocket);
+                        }
                         sendMessageToClient(currentSocket, "Enter password");
                         String password = getClientMessage(currentSocket);
-                        //register(name, username, password);     //save user to file
+                        credentials.addUser(name,username, password);
+                        sendMessageToClient(currentSocket, "Registration successful!");
                         break;
                     case "2":
                         // Login
@@ -57,6 +65,17 @@ public class ServerHandler implements Runnable{ // Thread to handle client conne
                                 "Enter your username: ";
                         sendMessageToClient(currentSocket, loginMenu);
                         String usernameLogin = getClientMessage(currentSocket);
+                        sendMessageToClient(currentSocket, "Enter your password: ");
+                        String passwordLogin = getClientMessage(currentSocket);
+                        int loginResponse=credentials.checkCredentials(usernameLogin, passwordLogin);
+                        if (loginResponse==200) {
+                            sendMessageToClient(currentSocket, "Login successful!");
+                            String printMessage = usernameLogin + " has connected to server";
+                            System.out.println(printMessage);       // Print message to server
+                            clientNameList.put(currentSocket, usernameLogin);
+                        } else {
+                            sendMessageToClient(currentSocket, loginResponse+" - Login Failed!");
+                        }
                         break;
                     default:
                         sendMessageToClient(currentSocket, "Invalid option. Please try again.");
