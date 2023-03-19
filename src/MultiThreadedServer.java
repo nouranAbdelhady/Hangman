@@ -64,7 +64,7 @@ public class MultiThreadedServer extends Server implements Runnable{
 
                             while (true){
                                 // Start game
-                                String gameMenu = "1- Single Player \n" +
+                                String gameMenu = "\n1- Single Player \n" +
                                         "2- Multiplayer";
                                 super.serverService.sendMessageToClient(currentSocket, gameMenu);
                                 String gameOption = super.serverService.getClientMessage(currentSocket);
@@ -131,7 +131,7 @@ public class MultiThreadedServer extends Server implements Runnable{
 
                                         // Update score
                                         currentUser.updateScore(scoreToUpdate);
-                                        super.serverService.sendMessageToClient(currentSocket, "Your score new is: "+currentUser.getScore());
+                                        super.serverService.sendMessageToClient(currentSocket, "Your new score is: "+currentUser.getScore());
                                         // Update in file
                                         // TODO: Update in file (function in serverService)
                                         break;

@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Team {
@@ -38,5 +39,11 @@ public class Team {
     }
     private void updateTeamScore(int score){
         this.score+=score;
+    }
+
+    private void updateScoreForAllPlayers() throws IOException {
+        for (User player : players) {
+            player.updateScore(this.score);
+        }
     }
 }
