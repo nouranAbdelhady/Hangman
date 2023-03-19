@@ -76,20 +76,29 @@ public class MultiThreadedServer extends Server implements Runnable{
                                     case "1":
                                         // Single Player
                                         super.serverService.sendMessageToClient(currentSocket, "Single Player");
-                                        User currentUser = super.getUsers().get(usernameLogin);     // Get current user
+                                        // Get current user
+                                        User currentUser = super.getUsers().get(usernameLogin);
 
                                         //super.getLookup(),super.getGameConfig() are from Server class
                                         SinglePlayer game = new SinglePlayer(super.getLookup(),super.getGameConfig(), currentUser);
-                                        System.out.println("Phrase to guess: "+game.getOriginalPhrase());       // Print at server
+                                        // Print at server
+                                        System.out.println("Phrase to guess: "+game.getOriginalPhrase());
 
                                         // Random phrase is selected from lookup
                                         // This is done inside the constructor of Game
 
-                                        int scoreToUpdate=game.getOriginalPhrase().length();        // Score = number of characters in phrase
-                                        System.out.println("Score: "+scoreToUpdate);       // Print at server
-                                        int leftAttempts = game.getGameConfig().getIncorrectAttempts();
+                                        // Score = number of characters in phrase
+                                        int scoreToUpdate=game.getOriginalPhrase().length();
+                                        // Print at server
+                                        System.out.println("Score: "+scoreToUpdate);
 
-                                        while(!game.isGameOver() && leftAttempts>0){
+                                        int leftAttempts = game.getGameConfig().getIncorrectAttempts();
+                                        // Initialize an array to keep track of guesses
+                                        char[] guesses = new char[50];
+                                        int numUniqueGuesses=0;
+
+                                        while(!game.isGameOver() && leftAttempts>0)
+                                        {
                                             // Preview number of attempts left
                                             super.serverService.sendMessageToClient(currentSocket, "Number of attempts left: "+leftAttempts);
 
@@ -101,28 +110,63 @@ public class MultiThreadedServer extends Server implements Runnable{
                                             String guess = super.serverService.getClientMessage(currentSocket);
 
                                             // If more than 1 character is entered, preview error message
-                                            while (guess.length()>1){
+                                            while (guess.length()>1)
+                                            {
                                                 super.serverService.sendMessageToClient(currentSocket, "Please enter only 1 character");
                                                 guess = super.serverService.getClientMessage(currentSocket);
                                             }
-                                            System.out.println("User guessed: "+guess);       // Print at server
+                                            // Print at server
+                                            System.out.println("User guessed: "+guess);
 
-                                            // single character
-                                            // update dashed word
-                                            boolean isCorrectGuess = game.isCorrectGuess(guess.charAt(0));
-                                            if (isCorrectGuess){
-                                                game.updateDashed(guess.charAt(0));
-                                            }else{
-                                                // Update left attempts
-                                                leftAttempts--;
+                                            // single character: user guess input to compare
+                                            // with the characters in the array guesses.
+                                            // char guessChar=guess.charAt(0);
+                                            char guessChar = Character.toLowerCase(guess.charAt(0));
+
+                                            boolean isDuplicateGuess = false;
+                                            for (int i = 0; i < numUniqueGuesses; i++)
+                                            {
+                                                // check if the user guess is a duplicate guess
+                                                if (guesses[i] == guessChar)
+                                                {
+                                                    isDuplicateGuess = true;
+                                                    break;
+                                                }
                                             }
 
+                                            if (isDuplicateGuess)
+                                            {
+                                                // If the guess has already been made
+                                                super.serverService.sendMessageToClient(currentSocket, "\nYou already guessed " + guessChar + "! Please enter another character.\n");
+                                            }
+                                            else
+                                            {
+                                                // Add guess to array
+                                                guesses[numUniqueGuesses] = guessChar;
+                                                numUniqueGuesses++;
+                                                if (game.isCorrectGuess(guessChar))
+                                                {
+                                                    // If guess is correct
+                                                    game.updateDashed(guessChar);
+                                                }
+                                                else
+                                                {
+                                                    // update left attempts
+                                                    // note that If the user enters a wrong character that has
+                                                    // already been guessed before, we don't decrement the number
+                                                    // of remaining attempts again.
+                                                    leftAttempts--;
+                                                }
+                                            }
                                         }
 
                                         // Game is over
-                                        if (game.didWin()){
+                                        if (game.didWin())
+                                        {
                                             super.serverService.sendMessageToClient(currentSocket, "You won!");
-                                        } else {
+                                        }
+                                        else
+                                        {
                                             super.serverService.sendMessageToClient(currentSocket, "You lost!");
                                             super.serverService.sendMessageToClient(currentSocket, "The phrase was: "+game.getOriginalPhrase());
                                             // Update score (number of characters guessed correctly)
@@ -135,10 +179,12 @@ public class MultiThreadedServer extends Server implements Runnable{
                                         // Update in file
                                         // TODO: Update in file (function in serverService)
                                         break;
+
                                     case "2":
                                         // Multiplayer
                                         super.serverService.sendMessageToClient(currentSocket, "Multiplayer");
                                         break;
+
                                     default:
                                         super.serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
                                         break;
