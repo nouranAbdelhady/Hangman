@@ -1,27 +1,28 @@
-public class SinglePlayer {
+public class SinglePlayer extends Game{
     private User user;
-    private Lookup lookup;
-    private GameConfig gameConfig;
+    private int countOfIncorrectGuesses;
 
-    public SinglePlayer(User user, Lookup lookup, GameConfig gameConfig) {
+    public SinglePlayer(Lookup lookup, GameConfig gameConfig, User user) {
+        super(lookup, gameConfig);
         this.user = user;
-        this.lookup = lookup;
-        this.gameConfig = gameConfig;
-    }
-    public void startGame(){
-        // Start game
+        this.countOfIncorrectGuesses = 0;
 
     }
-    public void endGame(){
-        // End game
 
+    public User getUser() {
+        return user;
     }
-    public void updateScore(int score){
-        // Update score
-        user.updateScore(score);
-    }
-    public void updateState(){
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public int getCountOfIncorrectGuesses() {
+        return countOfIncorrectGuesses;
+    }
+
+    public void setCountOfIncorrectGuesses(int countOfIncorrectGuesses) {
+        this.countOfIncorrectGuesses = countOfIncorrectGuesses;
     }
 
 }

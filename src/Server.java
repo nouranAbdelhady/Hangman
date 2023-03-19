@@ -4,10 +4,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Server {
 
-    // Server operations
+    // serverService has all the Server operations
     ServerService serverService;
     private static final int PORT = 5000;
     private final ArrayList<Socket> clients = new ArrayList<>();
@@ -16,18 +17,18 @@ public class Server {
 
     // Loaded from files
     // list of clients and client names [in Server (Parent)]
-    private HashMap<String, User> users = new HashMap<>();      // List of users loaded from credentials file
+    private Map<String, User> users = new HashMap<>();      // List of users loaded from credentials file
 
     // loaded from files
     private Lookup lookup;
     private Credentials credentials;
     private GameConfig gameConfig;
 
-    public HashMap<String, User> getUsers() {
+    public Map<String, User> getUsers() {
         return users;
     }
 
-    public void setUsers(HashMap<String, User> users) {
+    public void setUsers(Map<String, User> users) {
         this.users = users;
     }
 
@@ -65,10 +66,16 @@ public class Server {
     public Server() throws FileNotFoundException {
         this.serverService=new ServerServiceImplementation();
         Files files = this.serverService.loadFiles();
+
         // Set attributes
+        this.setCredentials(new Credentials(files.getAllUsers()));      //remove
+        this.setLookup(files.getLookupFile());
+        this.setGameConfig(files.getGameConfigFile());
+        this.setUsers(files.getAllUsers());
     }
     public static void main(String[] args) throws FileNotFoundException {
-        new Server().start();
+        Server server = new Server();
+        server.start();
     }
 
     private void start() {

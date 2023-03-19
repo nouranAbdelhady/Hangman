@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ServerServiceImplementation implements ServerService {
@@ -55,7 +57,11 @@ public class ServerServiceImplementation implements ServerService {
         //System.out.println("Lookup:");
         //readLookupFile.printContent();
 
-        System.out.println("Files loaded");
+        Map<String, User> loadedUsers = this.loadUsers();
+        readFiles.setAllUsers(loadedUsers);
+        //System.out.println("Users:");
+        //System.out.println("Files loaded");
+
         return readFiles;
     }
 
@@ -102,7 +108,24 @@ public class ServerServiceImplementation implements ServerService {
         return new Lookup(phrases);
     }
 
-    public void loadScore() throws FileNotFoundException {
+    public Map<String, User> loadUsers() throws FileNotFoundException {
+        // Load usernames and passwords from file
+        Map<String, User> user_map = new HashMap<String, User>();
+
+        FileInputStream loginn=new FileInputStream("./src/Files/login.txt");
+        Scanner login=new Scanner(loginn);    //file to be scanned
+        //returns true if there is another line to read
+        while(login.hasNextLine())
+        {
+            String readLine = login.nextLine();
+            //System.out.println(readLine);
+
+            String[] line = readLine.split("-"); // split line into username and password
+            user_map.put(line[1], new User(line[0], line[1], line[2])); // add username and password to hashmap
+        }
+        login.close();     //closes the scanner
+
+        // Update scores
         FileInputStream file=new FileInputStream("./src/Files/score.txt");
         Scanner sc=new Scanner(file);    //file to be scanned
         //returns true if there is another line to read
@@ -111,8 +134,10 @@ public class ServerServiceImplementation implements ServerService {
             String line=sc.nextLine();
             // separate username and score
             String[] parts = line.split("-");
-            //this.users.get(parts[0]).setScore(Integer.parseInt(parts[1]));     // Update score
+            user_map.get(parts[0]).setScore(Integer.parseInt(parts[1]));     // Update score
         }
         sc.close();     //closes the scanner
+
+        return user_map;
     }
 }

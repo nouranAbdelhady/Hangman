@@ -1,7 +1,9 @@
+import java.util.Map;
+
 public class Files {
     Lookup lookupFile;      // Phrases
     GameConfig gameConfigFile;
-    User allUsers;      // credentials + score
+    Map<String, User> allUsers;      // credentials + score
 
     public Lookup getLookupFile() {
         return lookupFile;
@@ -19,11 +21,11 @@ public class Files {
         this.gameConfigFile = gameConfigFile;
     }
 
-    public User getAllUsers() {
+    public Map<String, User> getAllUsers() {
         return allUsers;
     }
 
-    public void setAllUsers(User allUsers) {
+    public void setAllUsers(Map<String, User> allUsers) {
         this.allUsers = allUsers;
     }
 }

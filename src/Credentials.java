@@ -8,27 +8,15 @@ public class Credentials {
     // hashmap of usernames and passwords
     private Map<String, User> user_map = new HashMap<String, User>();
 
-    public Credentials() throws FileNotFoundException {
-        // Load usernames and passwords from file
-        FileInputStream file=new FileInputStream("./src/Files/login.txt");
-        Scanner sc=new Scanner(file);    //file to be scanned
-        //returns true if there is another line to read
-        while(sc.hasNextLine())
-        {
-            String readLine = sc.nextLine();
-            //System.out.println(readLine);
-
-            String[] line = readLine.split("-"); // split line into username and password
-            user_map.put(line[1], new User(line[0], line[1], line[2])); // add username and password to hashmap
-        }
-        sc.close();     //closes the scanner
+    public Credentials(Map<String, User> users)  {
+        this.user_map = users;
     }
 
     public void printContent(){
         // print the contents of the hashmap
         for (Map.Entry<String, User> entry : user_map.entrySet()) {
             // print username and password
-            System.out.println(entry.getKey() + " -> " + entry.getValue().getPassword());
+            System.out.println(entry.getKey() + " -> " + entry.getValue().getPassword()+" -> " + entry.getValue().getScore());
         }
     }
 
