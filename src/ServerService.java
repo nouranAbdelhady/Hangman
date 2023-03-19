@@ -9,7 +9,9 @@ public interface ServerService {
     public void sendMessageToAllClients(Socket sender, String message, ArrayList<Socket> clients) throws IOException;
     public void sendMessageToClient(Socket client, String message) throws IOException;
     public String getClientMessage(Socket client) throws IOException;
-    public Files loadFiles();
+    public Files loadFiles() throws FileNotFoundException;
+    public GameConfig loadGameConfig() throws FileNotFoundException;
+    public Lookup loadLookupPhrases() throws FileNotFoundException;
     public void loadScore() throws FileNotFoundException;
 
 }

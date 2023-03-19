@@ -2,27 +2,17 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 public class Lookup {
-    private ArrayList<String> phrase;
+    private ArrayList<String> phrases;
 
-    public Lookup() throws IOException{
-        // Load phrases from file
-        phrase = new ArrayList<>();
-
-        FileInputStream file=new FileInputStream("./src/Files/lookup.txt");
-        Scanner sc=new Scanner(file);    //file to be scanned
-        //returns true if there is another line to read
-        while(sc.hasNextLine())
-        {
-            phrase.add(sc.nextLine());      //adds the line to the arraylist
-        }
-        sc.close();     //closes the scanner
-}
+    public Lookup(ArrayList<String> phrase){
+        this.phrases=phrase;
+    }
 
     public String pickRandomPhrase(){
-        int max = phrase.size()-1;
+        int max = phrases.size()-1;
         int randomNumber = (int) ((Math.random() * (max)) + 0);
         // Pick a random phrase from the list
-        String randomPhrase = phrase.get(randomNumber);
+        String randomPhrase = phrases.get(randomNumber);
         return randomPhrase;
     }
     public String convertToDashes(String phrase){
@@ -66,8 +56,8 @@ public class Lookup {
     }
     public void printContent(){
         // Print the content of the file which was loaded
-        for (String s:phrase) {
-            System.out.println(s);
+        for (String phrase : phrases) {
+            System.out.println(phrase);
         }
     }
 

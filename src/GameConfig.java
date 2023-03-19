@@ -8,34 +8,13 @@ public class GameConfig {
     private int minPlayers;
     private int maxPlayers;
 
-    public GameConfig() throws FileNotFoundException {
-        // Load game config from file
-        FileInputStream file=new FileInputStream("./src/Files/configurations.txt");
-        Scanner sc=new Scanner(file);    //file to be scanned
-
-        //attemps
-        String line=sc.nextLine();
-        //split on '='
-        String[] parts = line.split("=");
-        this.incorrectAttempts= Integer.parseInt(parts[1]);
-
-        //min players
-        line=sc.nextLine();
-        //split on '='
-        parts = line.split("=");
-        this.minPlayers= Integer.parseInt(parts[1]);
-
-        //max players
-        line=sc.nextLine();
-        //split on '='
-        parts = line.split("=");
-        this.maxPlayers= Integer.parseInt(parts[1]);
-
-        sc.close();     //closes the scanner
+    public GameConfig(int incorrectAttempts, int minPlayers, int maxPlayers) {
+        this.incorrectAttempts = incorrectAttempts;
+        this.minPlayers = minPlayers;
+        this.maxPlayers = maxPlayers;
     }
 
     public void previewConfig() {
-        System.out.println("Game Config: ");
         System.out.println("Incorrect Attempts: " + this.incorrectAttempts);
         System.out.println("Min Players: " + this.minPlayers);
         System.out.println("Max Players: " + this.maxPlayers);

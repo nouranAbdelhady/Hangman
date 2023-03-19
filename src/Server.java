@@ -1,3 +1,4 @@
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -61,12 +62,12 @@ public class Server {
         return clientNameList;
     }
 
-    public Server(){
+    public Server() throws FileNotFoundException {
         this.serverService=new ServerServiceImplementation();
         Files files = this.serverService.loadFiles();
         // Set attributes
     }
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         new Server().start();
     }
 
