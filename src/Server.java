@@ -21,9 +21,7 @@ public class Server {
 
     // loaded from files
     private Lookup lookup;
-    private Credentials credentials;
     private GameConfig gameConfig;
-
     public Map<String, User> getUsers() {
         return users;
     }
@@ -38,14 +36,6 @@ public class Server {
 
     public void setLookup(Lookup lookup) {
         this.lookup = lookup;
-    }
-
-    public Credentials getCredentials() {
-        return credentials;
-    }
-
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
     }
 
     public GameConfig getGameConfig() {
@@ -68,7 +58,6 @@ public class Server {
         Files files = this.serverService.loadFiles();
 
         // Set attributes
-        this.setCredentials(new Credentials(files.getAllUsers()));      //remove
         this.setLookup(files.getLookupFile());
         this.setGameConfig(files.getGameConfigFile());
         this.setUsers(files.getAllUsers());

@@ -38,13 +38,13 @@ public class MultiThreadedServer extends Server implements Runnable{
                         String name = super.serverService.getClientMessage(currentSocket);
                         super.serverService.sendMessageToClient(currentSocket, "Enter username");
                         String username = super.serverService.getClientMessage(currentSocket);
-                        while (!super.getCredentials().isUniqueUsername(username)) {       // username must be unique
+                        while (!super.serverService.isUniqueUsername(username)) {       // username must be unique
                             super.serverService.sendMessageToClient(currentSocket, "Username already taken. Please try again.");
                             username = super.serverService.getClientMessage(currentSocket);
                         }
                         super.serverService.sendMessageToClient(currentSocket, "Enter password");
                         String password = super.serverService.getClientMessage(currentSocket);
-                        super.getCredentials().addUser(name,username, password);
+                        super.serverService.addUser(name,username, password);
                         super.serverService.sendMessageToClient(currentSocket, "Registration successful!");
                         break;
                     case "2":
@@ -55,7 +55,7 @@ public class MultiThreadedServer extends Server implements Runnable{
                         String usernameLogin = super.serverService.getClientMessage(currentSocket);
                         super.serverService.sendMessageToClient(currentSocket, "Enter your password: ");
                         String passwordLogin = super.serverService.getClientMessage(currentSocket);
-                        int loginResponse=super.getCredentials().checkCredentials(usernameLogin, passwordLogin);
+                        int loginResponse=super.serverService.checkCredentials(usernameLogin, passwordLogin);
                         if (loginResponse==200) {
                             super.serverService.sendMessageToClient(currentSocket, "Login successful!");
                             String printMessage = usernameLogin + " has connected to server";

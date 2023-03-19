@@ -12,5 +12,10 @@ public interface ServerService {
     public GameConfig loadGameConfig() throws FileNotFoundException;
     public Lookup loadLookupPhrases() throws FileNotFoundException;
     public Map<String, User> loadUsers() throws FileNotFoundException;
-
+    public int checkCredentials(String username, String password) throws IOException;
+    public boolean isUniqueUsername(String username) throws IOException;
+    public void printUserContent() throws IOException;
+    public void addUser(String name, String username, String password) throws IOException;
+    public void login(String username) throws IOException;
+    public void logout(String username) throws IOException;
 }

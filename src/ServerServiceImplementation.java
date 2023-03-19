@@ -140,4 +140,70 @@ public class ServerServiceImplementation implements ServerService {
 
         return user_map;
     }
+
+    @Override
+    public int checkCredentials(String username, String password) throws IOException {
+        // hashmap of usernames and passwords
+        Map<String, User> loadedUsers = this.loadUsers();
+        // check if username and password are in the hashmap
+        if (loadedUsers.containsKey(username)){
+            if (loadedUsers.get(username).getPassword().equals(password)){
+                // password correct
+                // update user status
+                loadedUsers.get(username).setOnline(true);
+                return 200;     // 200 = ok
+            }else{
+                // password incorrect
+                return 401;       // 401 = unauthorized
+            }
+        }else{
+            // username not found
+            return 404;     // 404 = not found
+        }
+    }
+
+    @Override
+    public boolean isUniqueUsername(String username) throws IOException {
+        Map<String, User> loadedUsers = this.loadUsers();
+        return !loadedUsers.containsKey(username);     // return true if username is unique
+    }
+
+    @Override
+    public void printUserContent() throws IOException {
+        Map<String, User> loadedUsers = this.loadUsers();
+        // print the contents of the hashmap
+        for (Map.Entry<String, User> entry : loadedUsers.entrySet()) {
+            // print username and password
+            System.out.println(entry.getKey() + " -> " + entry.getValue().getPassword()+" -> " + entry.getValue().getScore());
+        }
+    }
+
+    @Override
+    public void addUser(String name, String username, String password) throws IOException {
+        Map<String, User> loadedUsers = this.loadUsers();
+        // add new user to hashmap
+        loadedUsers.put(username, new User(name, username, password));
+        // add to file (login and score)
+        FileWriter myWriterLogin = new FileWriter("./src/Files/login.txt", true);
+        myWriterLogin.write(name + "-" + username + "-" + password+"\n");
+        myWriterLogin.close();
+        FileWriter myWriterScore = new FileWriter("./src/Files/score.txt", true);
+        myWriterScore.write(username + "-" + 0+"\n");
+        myWriterScore.close();
+    }
+
+    @Override
+    public void login(String username) throws IOException {
+        Map<String, User> loadedUsers = this.loadUsers();
+        // update user status
+        loadedUsers.get(username).setOnline(true);
+    }
+
+    @Override
+    public void logout(String username) throws IOException {
+        Map<String, User> loadedUsers = this.loadUsers();
+        // update user status
+        loadedUsers.get(username).setOnline(false);
+    }
+
 }
