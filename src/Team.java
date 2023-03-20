@@ -2,46 +2,41 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Team {
-    private int id;
     private String name;
     private ArrayList<User> players;
     private int score;
 
-    public Team(int id, String name) {
-        this.id = id;
+    public Team(String name) {
         this.name = name;
         this.players = new ArrayList<>();
         this.score = 0;
     }
-    private void addPlayer(User player){
+    public void addPlayer(User player){
         players.add(player);
     }
-    private void removePlayer(User player){
+    public ArrayList<User> getPlayers(){
+        return players;
+    }
+    public void removePlayer(User player){
         players.remove(player);
     }
-    private void setTeamName(String name){
+    public void setTeamName(String name){
         this.name=name;
     }
-    private String getTeamName(){
+    String getTeamName(){
         return name;
     }
-    private int getTeamId(){
-        return id;
-    }
-    private void setTeamId(int id){
-        this.id=id;
-    }
-    private int getTeamScore(){
+    public int getTeamScore(){
         return score;
     }
-    private void setTeamScore(int score){
+    public void setTeamScore(int score){
         this.score=score;
     }
-    private void updateTeamScore(int score){
+    public void updateTeamScore(int score){
         this.score+=score;
     }
 
-    private void updateScoreForAllPlayers() throws IOException {
+    public void updateScoreForAllPlayers() throws IOException {
         for (User player : players) {
             player.updateScore(this.score);
         }

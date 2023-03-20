@@ -9,25 +9,41 @@ import java.util.Map;
 public class Server {
 
     // serverService has all the Server operations
-    ServerService serverService;
+    public static ServerService serverService;
     private static final int PORT = 5000;
-    private final ArrayList<Socket> clients = new ArrayList<>();
-    private final HashMap<Socket, String> clientNameList = new HashMap<>();
-
+    private static final ArrayList<Socket> clients = new ArrayList<>();
+    private static final HashMap<Socket, String> clientNameList = new HashMap<>();
 
     // Loaded from files
-    // list of clients and client names [in Server (Parent)]
-    private Map<String, User> users = new HashMap<>();      // List of users loaded from credentials file
+    private static Lookup lookup;
+    private static GameConfig gameConfig;
 
-    // loaded from files
-    private Lookup lookup;
-    private GameConfig gameConfig;
+    // list of clients and client names [in Server (Parent)]
+    private static Map<String, User> users = new HashMap<>();      // List of users loaded from credentials file
+
+    private static Map<String, Team> teams = new HashMap<>();      // List of teams formed
     public Map<String, User> getUsers() {
         return users;
     }
 
     public void setUsers(Map<String, User> users) {
         this.users = users;
+    }
+
+    public ServerService getServerService() {
+        return serverService;
+    }
+
+    public void setServerService(ServerService serverService) {
+        this.serverService = serverService;
+    }
+
+    public Map<String, Team> getTeams() {
+        return teams;
+    }
+
+    public void addTeam(Team team){
+        this.teams.put(team.getTeamName(), team);
     }
 
     public Lookup getLookup() {
@@ -53,15 +69,9 @@ public class Server {
         return clientNameList;
     }
 
-    public Server() throws FileNotFoundException {
-        this.serverService=new ServerServiceImplementation();
-        Files files = this.serverService.loadFiles();
-
-        // Set attributes
-        this.setLookup(files.getLookupFile());
-        this.setGameConfig(files.getGameConfigFile());
-        this.setUsers(files.getAllUsers());
+    public Server() {
     }
+
     public static void main(String[] args) throws FileNotFoundException {
         Server server = new Server();
         server.start();
@@ -69,6 +79,15 @@ public class Server {
 
     private void start() {
         try{
+            // Load files
+            this.serverService=new ServerServiceImplementation();
+            Files files = this.serverService.loadFiles();
+
+            // Set attributes
+            this.setLookup(files.getLookupFile());
+            this.setGameConfig(files.getGameConfigFile());
+            this.setUsers(files.getAllUsers());
+
             ServerSocket serverSocket = new ServerSocket(PORT);
             System.out.println("[SERVER] Started...");
 
@@ -78,10 +97,6 @@ public class Server {
 
                 MultiThreadedServer ThreadServer = new MultiThreadedServer(socket);    // Accept clients and handle messages (Sending/Receiving)
                 new Thread(ThreadServer).start(); // start thread to handle
-
-                if (clients.size() > 3) {
-                    System.out.println(clients.size() + " players are connected to server");
-                }
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());

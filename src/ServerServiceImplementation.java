@@ -207,4 +207,17 @@ public class ServerServiceImplementation implements ServerService {
         loadedUsers.get(username).setOnline(false);
     }
 
+    @Override
+    public void printTeams(Map<String, Team> teams) {
+        // Loop on teams
+        for (Map.Entry<String, Team> entry : teams.entrySet()) {
+            // print team name
+            System.out.println("Team: "+entry.getKey());
+            // print team members
+            for (User singleUser : entry.getValue().getPlayers()) {
+                System.out.println("\t"+singleUser.getUsername());
+            }
+            System.out.println();
+        }
+    }
 }

@@ -18,4 +18,5 @@ public interface ServerService {
     public void addUser(String name, String username, String password) throws IOException;
     public void login(String username) throws IOException;
     public void logout(String username) throws IOException;
+    public void printTeams(Map<String, Team> teams);
 }

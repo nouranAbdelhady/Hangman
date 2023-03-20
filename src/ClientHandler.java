@@ -27,11 +27,14 @@ public class ClientHandler implements Runnable {
             }
         } catch (SocketException e) {
             System.out.println("You got disconnected :(");
+            System.exit(0);
         } catch (IOException exception) {
             System.out.println(exception);
         } finally {
             try {
+                socket.close();
                 input.close();
+                output.close();
             } catch (Exception exception) {
                 System.out.println(exception);
             }

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Map;
 
 /**
  * This class is used to handle multiple client connections, and
@@ -8,7 +9,7 @@ import java.net.SocketException;
  */
 public class MultiThreadedServer extends Server implements Runnable{
 
-    private Socket currentSocket;    // Socket of client
+    private final Socket currentSocket;    // Socket of client
 
     public MultiThreadedServer(Socket socket) throws IOException {
         this.currentSocket = socket;
@@ -18,14 +19,14 @@ public class MultiThreadedServer extends Server implements Runnable{
     public void run() {
         try {
             String welcome="Welcome to Hangman! \n";
-            super.serverService.sendMessageToClient(currentSocket, welcome);
+            serverService.sendMessageToClient(currentSocket, welcome);
             // When first connected, menu is previewed to client
             // Handle client messages
             while (true){
                 String menu = "1- Register \n" +
                         "2- Login";
-                super.serverService.sendMessageToClient(currentSocket, menu);
-                String option = super.serverService.getClientMessage(currentSocket);     // Read option sent from client
+                serverService.sendMessageToClient(currentSocket, menu);
+                String option = serverService.getClientMessage(currentSocket);     // Read option sent from client
                 if (option.equals("-")) {     //'-' means that client chose to disconnect
                     throw new SocketException();        // Throw exception to handle client disconnection
                 }
@@ -34,30 +35,30 @@ public class MultiThreadedServer extends Server implements Runnable{
                         // Register
                         String registerMenu = "Registration: \n" +
                                 "Enter your name: ";
-                        super.serverService.sendMessageToClient(currentSocket, registerMenu);
-                        String name = super.serverService.getClientMessage(currentSocket);
-                        super.serverService.sendMessageToClient(currentSocket, "Enter username");
-                        String username = super.serverService.getClientMessage(currentSocket);
-                        while (!super.serverService.isUniqueUsername(username)) {       // username must be unique
-                            super.serverService.sendMessageToClient(currentSocket, "Username already taken. Please try again.");
-                            username = super.serverService.getClientMessage(currentSocket);
+                        serverService.sendMessageToClient(currentSocket, registerMenu);
+                        String name = serverService.getClientMessage(currentSocket);
+                        serverService.sendMessageToClient(currentSocket, "Enter username");
+                        String username = serverService.getClientMessage(currentSocket);
+                        while (!serverService.isUniqueUsername(username)) {       // username must be unique
+                            serverService.sendMessageToClient(currentSocket, "Username already taken. Please try again.");
+                            username = serverService.getClientMessage(currentSocket);
                         }
-                        super.serverService.sendMessageToClient(currentSocket, "Enter password");
-                        String password = super.serverService.getClientMessage(currentSocket);
-                        super.serverService.addUser(name,username, password);
-                        super.serverService.sendMessageToClient(currentSocket, "Registration successful!");
+                        serverService.sendMessageToClient(currentSocket, "Enter password");
+                        String password = serverService.getClientMessage(currentSocket);
+                        serverService.addUser(name,username, password);
+                        serverService.sendMessageToClient(currentSocket, "Registration successful!");
                         break;
                     case "2":
                         // Login
                         String loginMenu = "Login: \n" +
                                 "Enter your username: ";
-                        super.serverService.sendMessageToClient(currentSocket, loginMenu);
-                        String usernameLogin = super.serverService.getClientMessage(currentSocket);
-                        super.serverService.sendMessageToClient(currentSocket, "Enter your password: ");
-                        String passwordLogin = super.serverService.getClientMessage(currentSocket);
-                        int loginResponse=super.serverService.checkCredentials(usernameLogin, passwordLogin);
+                        serverService.sendMessageToClient(currentSocket, loginMenu);
+                        String usernameLogin = serverService.getClientMessage(currentSocket);
+                        serverService.sendMessageToClient(currentSocket, "Enter your password: ");
+                        String passwordLogin = serverService.getClientMessage(currentSocket);
+                        int loginResponse=serverService.checkCredentials(usernameLogin, passwordLogin);
                         if (loginResponse==200) {
-                            super.serverService.sendMessageToClient(currentSocket, "Login successful!");
+                            serverService.sendMessageToClient(currentSocket, "Login successful!");
                             String printMessage = usernameLogin + " has connected to server";
                             System.out.println(printMessage);       // Print message to server
                             super.getClientNameList().put(currentSocket, usernameLogin);
@@ -67,18 +68,18 @@ public class MultiThreadedServer extends Server implements Runnable{
                                 String gameMenu = "\nMain Menu \n" +
                                         "1- Single Player \n" +
                                         "2- Multiplayer \n";
-                                super.serverService.sendMessageToClient(currentSocket, gameMenu);
-                                String gameOption = super.serverService.getClientMessage(currentSocket);
+                                serverService.sendMessageToClient(currentSocket, gameMenu);
+                                String gameOption = serverService.getClientMessage(currentSocket);
 
                                 if (gameOption.equals("-")) {     //'-' means that client chose to disconnect
                                     throw new SocketException();        // Throw exception to handle client disconnection
                                 }
+                                // Get current user
+                                User currentUser = super.getUsers().get(usernameLogin);
                                 switch (gameOption){
                                     case "1":
                                         // Single Player
-                                        super.serverService.sendMessageToClient(currentSocket, "Single Player");
-                                        // Get current user
-                                        User currentUser = super.getUsers().get(usernameLogin);
+                                        serverService.sendMessageToClient(currentSocket, "Single Player");
 
                                         //super.getLookup(),super.getGameConfig() are from Server class
                                         SinglePlayer game = new SinglePlayer(super.getLookup(),super.getGameConfig(), currentUser);
@@ -97,18 +98,18 @@ public class MultiThreadedServer extends Server implements Runnable{
                                         while(!game.isGameOver() && leftAttempts>0)
                                         {
                                             // Preview number of attempts left
-                                            super.serverService.sendMessageToClient(currentSocket, "Number of attempts left: "+leftAttempts);
+                                            serverService.sendMessageToClient(currentSocket, "Number of attempts left: "+leftAttempts);
                                             // Preview dashed word to client
-                                            super.serverService.sendMessageToClient(currentSocket, game.getCurrentDashed());
+                                            serverService.sendMessageToClient(currentSocket, game.getCurrentDashed());
                                             // Get guess from client
-                                            super.serverService.sendMessageToClient(currentSocket, "Enter a character: ");
-                                            String guess = super.serverService.getClientMessage(currentSocket);
+                                            serverService.sendMessageToClient(currentSocket, "Enter a character: ");
+                                            String guess = serverService.getClientMessage(currentSocket);
 
                                             // If more than 1 character is entered, preview error message
                                             while (guess.length()>1)
                                             {
-                                                super.serverService.sendMessageToClient(currentSocket, "Please enter only 1 character");
-                                                guess = super.serverService.getClientMessage(currentSocket);
+                                                serverService.sendMessageToClient(currentSocket, "Please enter only 1 character");
+                                                guess = serverService.getClientMessage(currentSocket);
                                             }
 
                                             // single character: user guess input to compare
@@ -119,7 +120,7 @@ public class MultiThreadedServer extends Server implements Runnable{
                                             if (game.hasBeenGuessed(guessChar))
                                             {
                                                 // If the guess has already been made
-                                                super.serverService.sendMessageToClient(currentSocket, "\nYou already guessed " + guessChar + "! Please enter another character.\n");
+                                                serverService.sendMessageToClient(currentSocket, "\nYou already guessed " + guessChar + "! Please enter another character.\n");
                                             }
                                             else
                                             {
@@ -132,7 +133,7 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     // update dashed word
                                                     game.updateDashed(guessChar);
                                                     // send to client
-                                                    super.serverService.sendMessageToClient(currentSocket, "Correct guess!");
+                                                    serverService.sendMessageToClient(currentSocket, "Correct guess!");
                                                 }
                                                 else
                                                 {
@@ -142,7 +143,7 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     // of remaining attempts again.
                                                     leftAttempts--;
                                                     // send to client
-                                                    super.serverService.sendMessageToClient(currentSocket, "Wrong guess!");
+                                                    serverService.sendMessageToClient(currentSocket, "Wrong guess!");
                                                 }
                                             }
                                         }
@@ -150,31 +151,31 @@ public class MultiThreadedServer extends Server implements Runnable{
                                         // Game is over
                                         if (game.didWin())
                                         {
-                                            super.serverService.sendMessageToClient(currentSocket, "You won!");
+                                            serverService.sendMessageToClient(currentSocket, "You won!");
                                         }
                                         else
                                         {
-                                            super.serverService.sendMessageToClient(currentSocket, "You lost!");
-                                            super.serverService.sendMessageToClient(currentSocket, "The phrase was: "+game.getOriginalPhrase());
+                                            serverService.sendMessageToClient(currentSocket, "You lost!");
+                                            serverService.sendMessageToClient(currentSocket, "The phrase was: "+game.getOriginalPhrase());
                                             // Update score (number of characters guessed correctly)
                                             scoreToUpdate-=game.getNumberOfDashed();
                                         }
 
                                         // Update score
                                         currentUser.updateScore(scoreToUpdate);
-                                        super.serverService.sendMessageToClient(currentSocket, "Your new score is: "+currentUser.getScore());
+                                        serverService.sendMessageToClient(currentSocket, "Your new score is: "+currentUser.getScore());
                                         break;
 
                                     case "2":
                                         // Multiplayer
-                                        super.serverService.sendMessageToClient(currentSocket, "Multiplayer");
+                                        serverService.sendMessageToClient(currentSocket, "Multiplayer");
                                         String multiplayerMenu = "1- Create new team \n" +
                                                 "2- Join existing team \n" +
                                                 "3- Join game room \n" +
                                                 "4- Back";
                                         while(true){
-                                            super.serverService.sendMessageToClient(currentSocket, multiplayerMenu);
-                                            String multiplayerOption = super.serverService.getClientMessage(currentSocket);
+                                            serverService.sendMessageToClient(currentSocket, multiplayerMenu);
+                                            String multiplayerOption = serverService.getClientMessage(currentSocket);
                                             if(multiplayerOption.equals("-")){
                                                 throw new SocketException();
                                             }
@@ -186,18 +187,81 @@ public class MultiThreadedServer extends Server implements Runnable{
                                             switch (multiplayerOption){
                                                 case "1":
                                                     // Create new team
-                                                    super.serverService.sendMessageToClient(currentSocket, "Enter team name: ");
+                                                    serverService.sendMessageToClient(currentSocket, "Enter team name: ");
+                                                    String teamName = serverService.getClientMessage(currentSocket);
+                                                    // team name must be unique
+                                                    while(super.getTeams().containsKey(teamName))
+                                                    {
+                                                        serverService.sendMessageToClient(currentSocket, "Team name is taken, please enter another name: ");
+                                                        teamName = serverService.getClientMessage(currentSocket);
+                                                    }
+                                                    // Create new team
+                                                    Team newTeam = new Team(teamName);
+                                                    // Add user to team
+                                                    newTeam.addPlayer(currentUser);
+                                                    // Add team to teams list
+                                                    super.getTeams().put(teamName, newTeam);
+                                                    // Send message to client that team was created, and
+                                                    // he is waiting for others to join by sending them the team name
+                                                    serverService.sendMessageToClient(currentSocket, "Team created! Waiting for others to join...");
+
+                                                    // If user sent 'P' to start the game
+                                                    while (true){
+                                                        String message = serverService.getClientMessage(currentSocket);
+                                                        if(message.equals("P") || message.equals("p")){
+                                                            // Start game
+                                                            serverService.sendMessageToClient(currentSocket, "You pressed 'P'!");
+                                                            break;
+                                                        }
+                                                    }
+                                                    // Validation for game before starting
+
                                                     break;
                                                 case "2":
                                                     // Join existing team
-                                                    super.serverService.sendMessageToClient(currentSocket, "Enter team name: 2");
+                                                    serverService.sendMessageToClient(currentSocket, "Enter team name: ");
+                                                    String teamNameToJoin = serverService.getClientMessage(currentSocket);
+
+                                                    // Check if team exists
+                                                    // If team exists, add user to team
+                                                    // If team doesn't exist, send message to client
+                                                    while(!super.getTeams().containsKey(teamNameToJoin))
+                                                    {
+                                                        serverService.sendMessageToClient(currentSocket, "Team doesn't exist, please enter another name: ");
+                                                        teamNameToJoin = serverService.getClientMessage(currentSocket);
+                                                    }
+                                                    // valid team names
+
+                                                    // TODO: Check if team config is valid
+                                                    // If team config is valid, add user to team
+                                                    // If team config is invalid, send message to client
+
+                                                    // Send message to all team members that a new player joined
+                                                    for(User player : super.getTeams().get(teamNameToJoin).getPlayers()){
+                                                        for (Map.Entry<Socket, String> entry : super.getClientNameList().entrySet()) {
+                                                            if (entry.getValue().equals(player.getUsername())) {
+                                                                Socket targetedUser = entry.getKey();
+                                                                serverService.sendMessageToClient(targetedUser, currentUser.getUsername()+" joined the team!");
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                    // Add user to team
+                                                    super.getTeams().get(teamNameToJoin).addPlayer(currentUser);
+                                                    // Send message to client that he joined the team
+                                                    serverService.sendMessageToClient(currentSocket, "You joined the team!");
+                                                    // Wait for team leader to start the game
+                                                    serverService.sendMessageToClient(currentSocket,"Waiting for team leader to start the game...");
+                                                    // Check game state
+
+
                                                     break;
                                                 case "3":
                                                     // Join game room
-                                                    super.serverService.sendMessageToClient(currentSocket, "Game Room");
+                                                    serverService.sendMessageToClient(currentSocket, "Game Room");
                                                     break;
                                                 default:
-                                                    super.serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
+                                                    serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
                                                     break;
                                             }
                                             if(multiplayerOption.equals("1") || multiplayerOption.equals("2") || multiplayerOption.equals("3")){
@@ -207,16 +271,16 @@ public class MultiThreadedServer extends Server implements Runnable{
                                         }
                                         break;
                                     default:
-                                        super.serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
+                                        serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
                                         break;
                                 }
                             }
                         } else {
-                            super.serverService.sendMessageToClient(currentSocket, loginResponse+" - Login Failed!");
+                            serverService.sendMessageToClient(currentSocket, loginResponse+" - Login Failed!");
                         }
                         break;
                     default:
-                        super.serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
+                        serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
                         break;
                 }
             }
@@ -224,6 +288,39 @@ public class MultiThreadedServer extends Server implements Runnable{
             String printMessage = super.getClientNameList().get(currentSocket) + " got disconnected";
             System.out.println(printMessage);       // Print message to server
 
+            // Change state of user to offline
+            for(User user : super.getUsers().values()){
+                if(user.getUsername().equals(super.getClientNameList().get(currentSocket))){
+                    user.setOnline(false);
+                }
+            }
+
+            // Remove user from team (if he is in one)
+            for(Team team : super.getTeams().values()){
+                for(User player : team.getPlayers()){
+                    if(player.getUsername().equals(super.getClientNameList().get(currentSocket))){
+                        team.removePlayer(player);
+
+                        // Send message to all team members that a player left
+                        for(User playerr : team.getPlayers()){
+                            for (Map.Entry<Socket, String> entry : super.getClientNameList().entrySet()) {
+                                if (entry.getValue().equals(playerr.getUsername())) {
+                                    Socket targetedUser = entry.getKey();
+                                    try {
+                                        serverService.sendMessageToClient(targetedUser, player.getUsername()+" left the team!");
+                                    } catch (IOException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    break;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            // Remove user from clients list
             super.getClients().remove(currentSocket);
             super.getClientNameList().remove(currentSocket);
         } catch (IOException e) {
