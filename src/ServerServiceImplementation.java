@@ -40,7 +40,7 @@ public class ServerServiceImplementation implements ServerService {
 
     @Override
     public Files loadFiles() throws FileNotFoundException {
-        System.out.println("Starting to load files");
+        //System.out.println("Starting to load files");
         // Logic
         Files readFiles = new Files();
 
@@ -60,8 +60,8 @@ public class ServerServiceImplementation implements ServerService {
         Map<String, User> loadedUsers = this.loadUsers();
         readFiles.setAllUsers(loadedUsers);
         //System.out.println("Users:");
-        //System.out.println("Files loaded");
 
+        System.out.println("Files loaded");
         return readFiles;
     }
 
@@ -183,6 +183,7 @@ public class ServerServiceImplementation implements ServerService {
         Map<String, User> loadedUsers = this.loadUsers();
         // add new user to hashmap
         loadedUsers.put(username, new User(name, username, password));
+
         // add to file (login and score)
         FileWriter myWriterLogin = new FileWriter("./src/Files/login.txt", true);
         myWriterLogin.write(name + "-" + username + "-" + password+"\n");

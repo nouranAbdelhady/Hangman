@@ -1,17 +1,31 @@
+import java.util.ArrayList;
+
 public abstract class Game {
     private Lookup lookup;
     private GameConfig gameConfig;
     private String originalPhrase;
     private String currentDashed;
+    private ArrayList<Character> guesses;
 
     public Game(Lookup lookup, GameConfig gameConfig) {
         this.lookup = lookup;
         this.gameConfig = gameConfig;
 
         // Prepare the game
-        //convert to lowercase for comparison
+        // convert to lowercase for comparison
         this.originalPhrase = pickRandomPhrase().toLowerCase();
         this.currentDashed = convertToDashes(this.originalPhrase);
+        this.guesses = new ArrayList<>();
+    }
+
+    public ArrayList<Character> getGuesses() {
+        return guesses;
+    }
+    public void addGuess(char newGuess) {
+        this.guesses.add(newGuess);
+    }
+    public boolean hasBeenGuessed(Character newGuess) {
+        return this.guesses.contains(newGuess);
     }
 
     public Lookup getLookup() {
@@ -44,9 +58,7 @@ public abstract class Game {
         int randomNumber = (int) ((Math.random() * (max)) + 0);
 
         // Pick a random phrase from the list
-        String randomPhrase = lookup.phrases.get(randomNumber);
-
-        return randomPhrase;
+        return lookup.phrases.get(randomNumber);
     }
     public String convertToDashes(String phrase){
         // split the phrase into an array of words using one or more whitespace characters
@@ -83,14 +95,7 @@ public abstract class Game {
     }
     public boolean isGameOver(){
         // Check if the game is over
-        if (this.currentDashed.equals(this.originalPhrase))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return this.currentDashed.equals(this.originalPhrase);
     }
     public int getNumberOfDashed(){
         // this will be used to update score
@@ -111,12 +116,6 @@ public abstract class Game {
     public boolean isCorrectGuess(Character guessedChar){
         // Check if the guessed character is in the original phrase
         // Handle if upper or lower case
-        if(this.originalPhrase.indexOf(guessedChar) != -1){
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return this.originalPhrase.indexOf(guessedChar) != -1;
     }
 }
