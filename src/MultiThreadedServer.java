@@ -64,8 +64,9 @@ public class MultiThreadedServer extends Server implements Runnable{
 
                             while (true){
                                 // Start game
-                                String gameMenu = "\n1- Single Player \n" +
-                                        "2- Multiplayer";
+                                String gameMenu = "\nMain Menu \n" +
+                                        "1- Single Player \n" +
+                                        "2- Multiplayer \n";
                                 super.serverService.sendMessageToClient(currentSocket, gameMenu);
                                 String gameOption = super.serverService.getClientMessage(currentSocket);
 
@@ -93,18 +94,12 @@ public class MultiThreadedServer extends Server implements Runnable{
                                         System.out.println("Score: "+scoreToUpdate);
 
                                         int leftAttempts = game.getGameConfig().getIncorrectAttempts();
-                                        // Initialize an array to keep track of guesses
-                                        char[] guesses = new char[50];
-                                        int numUniqueGuesses=0;
-
                                         while(!game.isGameOver() && leftAttempts>0)
                                         {
                                             // Preview number of attempts left
                                             super.serverService.sendMessageToClient(currentSocket, "Number of attempts left: "+leftAttempts);
-
                                             // Preview dashed word to client
                                             super.serverService.sendMessageToClient(currentSocket, game.getCurrentDashed());
-
                                             // Get guess from client
                                             super.serverService.sendMessageToClient(currentSocket, "Enter a character: ");
                                             String guess = super.serverService.getClientMessage(currentSocket);
@@ -115,39 +110,29 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                 super.serverService.sendMessageToClient(currentSocket, "Please enter only 1 character");
                                                 guess = super.serverService.getClientMessage(currentSocket);
                                             }
-                                            // Print at server
-                                            System.out.println("User guessed: "+guess);
 
                                             // single character: user guess input to compare
-                                            // with the characters in the array guesses.
-                                            // char guessChar=guess.charAt(0);
-                                            char guessChar = Character.toLowerCase(guess.charAt(0));
+                                            // with the characters in the array guesses (in Game class).
+                                            // converted to lower to handle case sensitivity
+                                            Character guessChar = Character.toLowerCase(guess.charAt(0));
 
-                                            boolean isDuplicateGuess = false;
-                                            for (int i = 0; i < numUniqueGuesses; i++)
-                                            {
-                                                // check if the user guess is a duplicate guess
-                                                if (guesses[i] == guessChar)
-                                                {
-                                                    isDuplicateGuess = true;
-                                                    break;
-                                                }
-                                            }
-
-                                            if (isDuplicateGuess)
+                                            if (game.hasBeenGuessed(guessChar))
                                             {
                                                 // If the guess has already been made
                                                 super.serverService.sendMessageToClient(currentSocket, "\nYou already guessed " + guessChar + "! Please enter another character.\n");
                                             }
                                             else
                                             {
+                                                // Unique guess
                                                 // Add guess to array
-                                                guesses[numUniqueGuesses] = guessChar;
-                                                numUniqueGuesses++;
+                                                game.addGuess(guessChar);
                                                 if (game.isCorrectGuess(guessChar))
                                                 {
                                                     // If guess is correct
+                                                    // update dashed word
                                                     game.updateDashed(guessChar);
+                                                    // send to client
+                                                    super.serverService.sendMessageToClient(currentSocket, "Correct guess!");
                                                 }
                                                 else
                                                 {
@@ -156,6 +141,8 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     // already been guessed before, we don't decrement the number
                                                     // of remaining attempts again.
                                                     leftAttempts--;
+                                                    // send to client
+                                                    super.serverService.sendMessageToClient(currentSocket, "Wrong guess!");
                                                 }
                                             }
                                         }
@@ -176,15 +163,49 @@ public class MultiThreadedServer extends Server implements Runnable{
                                         // Update score
                                         currentUser.updateScore(scoreToUpdate);
                                         super.serverService.sendMessageToClient(currentSocket, "Your new score is: "+currentUser.getScore());
-                                        // Update in file
-                                        // TODO: Update in file (function in serverService)
                                         break;
 
                                     case "2":
                                         // Multiplayer
                                         super.serverService.sendMessageToClient(currentSocket, "Multiplayer");
-                                        break;
+                                        String multiplayerMenu = "1- Create new team \n" +
+                                                "2- Join existing team \n" +
+                                                "3- Join game room \n" +
+                                                "4- Back";
+                                        while(true){
+                                            super.serverService.sendMessageToClient(currentSocket, multiplayerMenu);
+                                            String multiplayerOption = super.serverService.getClientMessage(currentSocket);
+                                            if(multiplayerOption.equals("-")){
+                                                throw new SocketException();
+                                            }
+                                            if(multiplayerOption.equals("4")){
+                                                break;
+                                            }
 
+                                            // Handle menu
+                                            switch (multiplayerOption){
+                                                case "1":
+                                                    // Create new team
+                                                    super.serverService.sendMessageToClient(currentSocket, "Enter team name: ");
+                                                    break;
+                                                case "2":
+                                                    // Join existing team
+                                                    super.serverService.sendMessageToClient(currentSocket, "Enter team name: 2");
+                                                    break;
+                                                case "3":
+                                                    // Join game room
+                                                    super.serverService.sendMessageToClient(currentSocket, "Game Room");
+                                                    break;
+                                                default:
+                                                    super.serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
+                                                    break;
+                                            }
+                                            if(multiplayerOption.equals("1") || multiplayerOption.equals("2") || multiplayerOption.equals("3")){
+                                                // Game for multiplayer finished
+                                                break;  // Go back to main menu
+                                            }
+                                        }
+                                        break;
                                     default:
                                         super.serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
                                         break;
