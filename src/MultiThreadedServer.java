@@ -189,28 +189,57 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     // Create new team
                                                     serverService.sendMessageToClient(currentSocket, "Enter team name: ");
                                                     String teamName = serverService.getClientMessage(currentSocket);
+
                                                     // team name must be unique
                                                     while(super.getTeams().containsKey(teamName))
                                                     {
                                                         serverService.sendMessageToClient(currentSocket, "Team name is taken, please enter another name: ");
                                                         teamName = serverService.getClientMessage(currentSocket);
                                                     }
+
                                                     // Create new team
                                                     Team newTeam = new Team(teamName);
+
                                                     // Add user to team
                                                     newTeam.addPlayer(currentUser);
+
                                                     // Add team to teams list
                                                     super.getTeams().put(teamName, newTeam);
+
                                                     // Send message to client that team was created, and
                                                     // he is waiting for others to join by sending them the team name
                                                     serverService.sendMessageToClient(currentSocket, "Team created! Waiting for others to join...");
 
                                                     // If user sent 'P' to start the game
-                                                    while (true){
+                                                    while (true)
+                                                    {
                                                         String message = serverService.getClientMessage(currentSocket);
-                                                        if(message.equals("P") || message.equals("p")){
+                                                        if(message.equals("P") || message.equals("p"))
+                                                        {
+                                                            // check if teams have equal number of players before
+                                                            // starting the game
+                                                            boolean teamsAreEqual= true;
+                                                            int numOfPlayersInTeam=newTeam.getPlayers().size();
+
+                                                            // iterate through teams and check if number of players in
+                                                            // each team is equal to numPlayersInTeam
+                                                            for(Team team: super.getTeams().values())
+                                                            {
+                                                                if(team.getPlayers().size() != numOfPlayersInTeam)
+                                                                {
+                                                                    teamsAreEqual= false;
+                                                                    break;
+                                                                }
+                                                            }
+
+                                                            if(!teamsAreEqual)
+                                                            {
+                                                                serverService.sendMessageToClient(currentSocket, "Error: Teams have different number of players. Please wait for all teams to have equal number of players.");
+                                                                continue;
+                                                            }
+
                                                             // Start game
-                                                            serverService.sendMessageToClient(currentSocket, "You pressed 'P'!");
+                                                            serverService.sendMessageToClient(currentSocket, "You pressed 'P'! GAME IS STARTING");
                                                             break;
                                                         }
                                                     }
@@ -222,14 +251,36 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     serverService.sendMessageToClient(currentSocket, "Enter team name: ");
                                                     String teamNameToJoin = serverService.getClientMessage(currentSocket);
 
-                                                    // Check if team exists
-                                                    // If team exists, add user to team
-                                                    // If team doesn't exist, send message to client
-                                                    while(!super.getTeams().containsKey(teamNameToJoin))
+                                                    while (true)
                                                     {
-                                                        serverService.sendMessageToClient(currentSocket, "Team doesn't exist, please enter another name: ");
-                                                        teamNameToJoin = serverService.getClientMessage(currentSocket);
+                                                        // Check if team exists
+                                                        // If team doesn't exist, send message to client
+                                                        if (!super.getTeams().containsKey(teamNameToJoin))
+                                                        {
+                                                            serverService.sendMessageToClient(currentSocket, "Team doesn't exist, please enter another name: ");
+                                                            teamNameToJoin = serverService.getClientMessage(currentSocket);
+                                                            continue;
+                                                        }
+
+                                                        // Check Min team players
+                                                        if (super.getTeams().get(teamNameToJoin).getPlayers().size() < getGameConfig().getMinPlayers())
+                                                        {
+                                                            serverService.sendMessageToClient(currentSocket, "Team must have at least two players: ");
+                                                            teamNameToJoin = serverService.getClientMessage(currentSocket);
+                                                            continue;
+                                                        }
+
+                                                        // Check Max team players
+                                                        if (super.getTeams().get(teamNameToJoin).getPlayers().size() >= getGameConfig().getMaxPlayers())
+                                                        {
+                                                            serverService.sendMessageToClient(currentSocket, "Team members limit exceeded, please join another team: ");
+                                                            teamNameToJoin = serverService.getClientMessage(currentSocket);
+                                                            continue;
+                                                        }
+
+                                                        break;
                                                     }
+                                                    // If team exists, add user to team
                                                     // valid team names
 
                                                     // TODO: Check if team config is valid
@@ -237,9 +288,12 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     // If team config is invalid, send message to client
 
                                                     // Send message to all team members that a new player joined
-                                                    for(User player : super.getTeams().get(teamNameToJoin).getPlayers()){
-                                                        for (Map.Entry<Socket, String> entry : super.getClientNameList().entrySet()) {
-                                                            if (entry.getValue().equals(player.getUsername())) {
+                                                    for(User player : super.getTeams().get(teamNameToJoin).getPlayers())
+                                                    {
+                                                        for (Map.Entry<Socket, String> entry : super.getClientNameList().entrySet())
+                                                        {
+                                                            if (entry.getValue().equals(player.getUsername()))
+                                                            {
                                                                 Socket targetedUser = entry.getKey();
                                                                 serverService.sendMessageToClient(targetedUser, currentUser.getUsername()+" joined the team!");
                                                                 break;
