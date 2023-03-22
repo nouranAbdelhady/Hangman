@@ -248,19 +248,23 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                                         serverService.sendMessageToAllTeamMembers(newTeam, "You are down "+difference+" player(s)", super.getClientNameList());
                                                                         serverService.sendMessageToAllTeamMembers(opponentTeam, "Waiting for other team...", super.getClientNameList());
                                                                         opponentTeam.setCanStartGame(true);
+                                                                        newTeam.setCanStartGame(false);
+                                                                        break;
                                                                     } else
                                                                     {
                                                                         serverService.sendMessageToAllTeamMembers(opponentTeam, "You are down "+(-1*difference)+" player(s)", super.getClientNameList());
                                                                         serverService.sendMessageToAllTeamMembers(newTeam, "Waiting for other team....", super.getClientNameList());
                                                                         newTeam.setCanStartGame(true);
+                                                                        opponentTeam.setCanStartGame(false);
+                                                                        break;
                                                                     }
-                                                                    continue;
                                                                 }
-                                                                // Validation complete
-                                                                // Set can start game to true
-                                                                newTeam.setCanStartGame(true);
-                                                                opponentTeam.setCanStartGame(true);
-
+                                                                else{
+                                                                    // Equal number of players
+                                                                    // Set can start game to true
+                                                                    newTeam.setCanStartGame(true);
+                                                                    opponentTeam.setCanStartGame(true);
+                                                                }
                                                                 // Start game
                                                                 Team teamA = currentUser.getCurrentTeam();
                                                                 Team teamB = teamA.getOpponentTeam();
@@ -285,11 +289,15 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                                         if(AAttempts==0 || BAttempts==0){
                                                                             // Game over
                                                                             multiPlayer.setGameOver(true);
+                                                                            teamA.setGameOver(true);
+                                                                            teamB.setGameOver(true);
                                                                             break;
                                                                         }
                                                                         if(multiPlayer.getNumberOfDashed()==0){
                                                                             // Game over
                                                                             multiPlayer.setGameOver(true);
+                                                                            teamA.setGameOver(true);
+                                                                            teamB.setGameOver(true);
                                                                             break;
                                                                         }
 
@@ -373,21 +381,49 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                                         }
                                                                     }
                                                                     // Game over
-                                                                    // Display winner
-                                                                    if(teamA.getTeamScore()>teamB.getTeamScore()) {
-                                                                        serverService.sendMessageToAllTeamMembers(teamA, "You won!", super.getClientNameList());
-                                                                        serverService.sendMessageToAllTeamMembers(teamB, "You lost!", super.getClientNameList());
+                                                                    // Check score
+                                                                    // Check if there is a tie
+                                                                    if (teamA.getTeamScore()==teamB.getTeamScore())
+                                                                    {
+                                                                        serverService.sendMessageToAllTeamMembers(teamA, "It's a tie!", super.getClientNameList());
+                                                                        serverService.sendMessageToAllTeamMembers(teamB, "It's a tie!", super.getClientNameList());
+                                                                        serverService.sendMessageToAllTeamMembers(teamA, "The word was: "+multiPlayer.getOriginalPhrase(), super.getClientNameList());
                                                                         serverService.sendMessageToAllTeamMembers(teamB, "The word was: "+multiPlayer.getOriginalPhrase(), super.getClientNameList());
                                                                         serverService.sendMessageToAllTeamMembers(teamA, "All team members got extra "+teamA.getTeamScore()+" point", super.getClientNameList());
-                                                                        // Update team score
-                                                                        teamA.updateScoreForAllPlayers();
-                                                                    } else {
-                                                                        serverService.sendMessageToAllTeamMembers(teamB, "You won!", super.getClientNameList());
-                                                                        serverService.sendMessageToAllTeamMembers(teamA, "You lost!", super.getClientNameList());
-                                                                        serverService.sendMessageToAllTeamMembers(teamA, "The word was: "+multiPlayer.getOriginalPhrase(), super.getClientNameList());
                                                                         serverService.sendMessageToAllTeamMembers(teamB, "All team members got extra "+teamB.getTeamScore()+" point", super.getClientNameList());
                                                                         // Update team score
+                                                                        teamA.updateScoreForAllPlayers();
                                                                         teamB.updateScoreForAllPlayers();
+                                                                        multiPlayer.setGameOver(true);
+                                                                        teamA.setGameOver(true);
+                                                                        teamB.setGameOver(true);
+                                                                        break;
+                                                                    }
+                                                                    else{
+                                                                        // Display winner
+                                                                        if(teamA.getTeamScore()>teamB.getTeamScore()) {
+                                                                            serverService.sendMessageToAllTeamMembers(teamA, "You won!", super.getClientNameList());
+                                                                            serverService.sendMessageToAllTeamMembers(teamB, "You lost!", super.getClientNameList());
+                                                                            serverService.sendMessageToAllTeamMembers(teamB, "The word was: "+multiPlayer.getOriginalPhrase(), super.getClientNameList());
+                                                                            serverService.sendMessageToAllTeamMembers(teamA, "All team members got extra "+teamA.getTeamScore()+" point", super.getClientNameList());
+                                                                            // Update team score
+                                                                            teamA.updateScoreForAllPlayers();
+                                                                            multiPlayer.setGameOver(true);
+                                                                            teamA.setGameOver(true);
+                                                                            teamB.setGameOver(true);
+                                                                            break;
+                                                                        } else {
+                                                                            serverService.sendMessageToAllTeamMembers(teamB, "You won!", super.getClientNameList());
+                                                                            serverService.sendMessageToAllTeamMembers(teamA, "You lost!", super.getClientNameList());
+                                                                            serverService.sendMessageToAllTeamMembers(teamA, "The word was: "+multiPlayer.getOriginalPhrase(), super.getClientNameList());
+                                                                            serverService.sendMessageToAllTeamMembers(teamB, "All team members got extra "+teamB.getTeamScore()+" point", super.getClientNameList());
+                                                                            // Update team score
+                                                                            teamB.updateScoreForAllPlayers();
+                                                                            multiPlayer.setGameOver(true);
+                                                                            teamA.setGameOver(true);
+                                                                            teamB.setGameOver(true);
+                                                                            break;
+                                                                        }
                                                                     }
                                                                 }
                                                                 break;
@@ -418,7 +454,17 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                             serverService.sendMessageToClient(currentSocket, "You must send 'P' to start the game");
                                                         }
                                                     }
-                                                     break;
+                                                    // Do not return to main menu unless game is over (teamleader1 pressed 'P' and teamleader2 didnt press 'P')
+                                                    while(!currentUser.getCurrentTeam().getGameOver()){
+
+                                                    }
+                                                    // wait 3 seconds before returning to main menu (preview score)
+                                                    try {
+                                                        Thread.sleep(3000);
+                                                    } catch (InterruptedException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    break;
                                                 case "2":
                                                     // Join existing team
                                                     serverService.sendMessageToClient(currentSocket, "Enter team name: ");
@@ -467,35 +513,17 @@ public class MultiThreadedServer extends Server implements Runnable{
                                             // Loop on current's user teams to check if game started
                                             if(!currentUser.getCurrentTeam().getCanStartGame()){
                                                 serverService.sendMessageToClient(currentSocket, "Waiting for other players to join...");
-                                                while (!currentUser.getCurrentTeam().getCanStartGame()){
-                                                    // wait;
-                                                    if(multiPlayer.getGameOver()){
-                                                        break;
-                                                    }
-                                                }
                                             }
-
-                                            if(!currentUser.getCurrentTeam().getCanStartGame()){
-                                                if (currentUser.getCurrentTeam().getOpponentTeam()!=null){
-                                                    if (!currentUser.getCurrentTeam().getOpponentTeam().getCanStartGame()){
-                                                        while (!currentUser.getCurrentTeam().getOpponentTeam().getCanStartGame()){
-                                                            // wait;
-                                                            if(multiPlayer.getGameOver()){
-                                                                break;
-                                                            }
-                                                            continue;
-                                                        }
-                                                    }
-                                                }
+                                            while (!currentUser.getCurrentTeam().getGameOver()){
+                                                // wait;
                                             }
-                                            if(multiPlayer.getGameOver()){
-                                                break;
+                                            // wait 3 seconds before returning to main menu (preview score)
+                                            try {
+                                                Thread.sleep(3000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
                                             }
-                                            else{
-                                                while (!multiPlayer.getGameOver()){
-                                                    // trap
-                                                }
-                                            }
+                                            break;
                                         }
                                         break;
                                     default:
@@ -516,41 +544,30 @@ public class MultiThreadedServer extends Server implements Runnable{
             String printMessage = super.getClientNameList().get(currentSocket) + " got disconnected";
             System.out.println(printMessage);       // Print message to server
 
+            Team disconnectedUserTeam = null;
             // Change state of user to offline
             for(User user : super.getUsers().values()){
                 if(user.getUsername().equals(super.getClientNameList().get(currentSocket))){
                     user.setOnline(false);
+                    disconnectedUserTeam=user.getCurrentTeam();
+                    disconnectedUserTeam.removePlayer(user);
                 }
             }
 
-            // Remove user from team (if he is in one)
-            for(Team team : super.getTeams().values()){
-                for(User player : team.getPlayers()){
-                    if(player.getUsername().equals(super.getClientNameList().get(currentSocket))){
-                        if(team.getPlayers().get(0).getUsername().equals(player.getUsername())){    // Team leader = first player in team
-                            // If user is team leader, remove team --> disconnect all team members
-                            super.getTeams().remove(team.getTeamName());
-                            // Send message to all team members that the team was removed
-                            try {
-                                serverService.sendMessageToAllTeamMembers(team, ("Connection Issue!"), super.getClientNameList());
-                                // TODO: Disconnect all team members
-                            } catch (IOException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }else{  // User is not team leader
-                            // Remove user from team
-                            team.removePlayer(player);
-                            // Send message to all team members that a player left
-                            try {
-                                serverService.sendMessageToAllTeamMembers(team, (player.getUsername()+" left the team!"), super.getClientNameList());
-                            } catch (IOException ex) {
-                                throw new RuntimeException(ex);
-                            }
-
-                        }
+            // Remove team (if he is in one)
+            if(disconnectedUserTeam!=null){
+                Team opponentTeam=disconnectedUserTeam.getOpponentTeam();
+                // Send exception to both teams
+                try {
+                    serverService.diconnectAllPlayers(disconnectedUserTeam, super.getClientNameList());
+                    if(opponentTeam!=null){
+                        serverService.diconnectAllPlayers(opponentTeam, super.getClientNameList());
                     }
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
                 }
             }
+
             // Remove user from clients list
             super.getClients().remove(currentSocket);
             super.getClientNameList().remove(currentSocket);

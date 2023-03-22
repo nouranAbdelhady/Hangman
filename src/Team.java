@@ -6,6 +6,7 @@ public class Team {
     private ArrayList<User> players;
     private int score;
     private Boolean canStartGame;
+    private Boolean isGameOver;
     private Team opponentTeam;
     private int numberOfAttemptsLeft;
     public Team(String name) {
@@ -14,6 +15,7 @@ public class Team {
         this.score = 0;
         this.canStartGame = false;
         this.opponentTeam = null;
+        this.isGameOver = false;
     }
     public void addPlayer(User player){
         players.add(player);
@@ -70,5 +72,13 @@ public class Team {
     }
     public void updateNumberOfAttemptsLeft() {
         this.numberOfAttemptsLeft--;
+    }
+
+    public Boolean getGameOver() {
+        return isGameOver;
+    }
+
+    public void setGameOver(Boolean gameOver) {
+        isGameOver = gameOver;
     }
 }
