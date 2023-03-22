@@ -5,13 +5,15 @@ public class Team {
     private String name;
     private ArrayList<User> players;
     private int score;
-    // flag to track if the first player is the team leader
-    private boolean isLeader;
+    private Boolean canStartGame;
+    private Team opponentTeam;
+    private int numberOfAttemptsLeft;
     public Team(String name) {
         this.name = name;
         this.players = new ArrayList<>();
         this.score = 0;
-        this.isLeader=true;
+        this.canStartGame = false;
+        this.opponentTeam = null;
     }
     public void addPlayer(User player){
         players.add(player);
@@ -37,16 +39,36 @@ public class Team {
     public void updateTeamScore(int score){
         this.score+=score;
     }
-    public boolean isLeader() {
-        return isLeader;
+    public Boolean getCanStartGame() {
+        return canStartGame;
     }
-    public void setIsLeader(boolean isLeader) {
-        this.isLeader = isLeader;
+
+    public void setCanStartGame(Boolean canStartGame) {
+        this.canStartGame = canStartGame;
+    }
+
+    public Team getOpponentTeam() {
+        return opponentTeam;
+    }
+
+    public void setOpponentTeam(Team opponentName) {
+        this.opponentTeam = opponentName;
     }
 
     public void updateScoreForAllPlayers() throws IOException {
         for (User player : players) {
             player.updateScore(this.score);
         }
+    }
+
+    public int getNumberOfAttemptsLeft() {
+        return numberOfAttemptsLeft;
+    }
+
+    public void setNumberOfAttemptsLeft(int numberOfAttemptsLeft) {
+        this.numberOfAttemptsLeft = numberOfAttemptsLeft;
+    }
+    public void updateNumberOfAttemptsLeft() {
+        this.numberOfAttemptsLeft--;
     }
 }

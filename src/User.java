@@ -9,6 +9,8 @@ public class User {
     private boolean isOnline;
     private int teamId;
 
+    private Team currentTeam;
+
     public User(String name, String username, String password) {
         this.name = name;
         this.username = username;
@@ -64,6 +66,14 @@ public class User {
 
     public void setTeamId(int teamId) {
         this.teamId = teamId;
+    }
+
+    public Team getCurrentTeam() {
+        return currentTeam;
+    }
+
+    public void setCurrentTeam(Team currentTeam) {
+        this.currentTeam = currentTeam;
     }
 
     public void updateScore(int newScore) throws IOException {

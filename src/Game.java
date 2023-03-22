@@ -6,6 +6,7 @@ public abstract class Game {
     private String originalPhrase;
     private String currentDashed;
     private ArrayList<Character> guesses;
+    private Boolean isGameOver = false;
 
     public Game(Lookup lookup, GameConfig gameConfig) {
         this.lookup = lookup;
@@ -113,6 +114,15 @@ public abstract class Game {
         // Check if the player won
         return this.currentDashed.equals(this.originalPhrase);
     }
+
+    public Boolean getGameOver() {
+        return isGameOver;
+    }
+
+    public void setGameOver(Boolean gameOver) {
+        isGameOver = gameOver;
+    }
+
     public boolean isCorrectGuess(Character guessedChar){
         // Check if the guessed character is in the original phrase
         // Handle if upper or lower case

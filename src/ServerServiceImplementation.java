@@ -220,4 +220,26 @@ public class ServerServiceImplementation implements ServerService {
             System.out.println();
         }
     }
+
+    // TODO: Dont send message to sender
+    @Override
+    public void sendMessageToAllTeamMembers(Team team, String message, HashMap<Socket, String> clients) throws IOException {
+        BufferedWriter writer;
+
+        //Loop on all team members
+        for ( User user : team.getPlayers() ) {
+            String targetedUsername = user.getUsername();
+            // Loop on clients (active terminals)
+            for (Map.Entry<Socket, String> entry : clients.entrySet()) {
+                if (entry.getValue().equals(targetedUsername)) {
+                    // Send message to client
+                    writer = new BufferedWriter(new OutputStreamWriter(entry.getKey().getOutputStream()));
+                    writer.write(message);
+                    writer.newLine();
+                    writer.flush();
+                }
+            }
+
+        }
+    }
 }
