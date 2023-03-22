@@ -21,5 +21,4 @@ public interface ServerService {
     public void login(String username) throws IOException;
     public void logout(String username) throws IOException;
     public void printTeams(Map<String, Team> teams);
-    public void diconnectAllPlayers(Team targetedTeam, HashMap<Socket, String> clients) throws IOException;
 }

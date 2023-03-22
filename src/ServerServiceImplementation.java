@@ -233,33 +233,13 @@ public class ServerServiceImplementation implements ServerService {
             for (Map.Entry<Socket, String> entry : clients.entrySet()) {
                 if (entry.getValue().equals(targetedUsername)) {
                     // Send message to client
-                    writer = new BufferedWriter(new OutputStreamWriter(entry.getKey().getOutputStream()));
-                    writer.write(message);
-                    writer.newLine();
-                    writer.flush();
-                }
-            }
-
-        }
-    }
-    @Override
-    public void diconnectAllPlayers(Team team, HashMap<Socket, String> clients) throws IOException {
-        BufferedWriter writer;
-
-        //Loop on all team members
-        for ( User user : team.getPlayers() ) {
-            String targetedUsername = user.getUsername();
-            // Loop on clients (active terminals)
-            for (Map.Entry<Socket, String> entry : clients.entrySet()) {
-                if (entry.getValue().equals(targetedUsername)) {
-                    writer = new BufferedWriter(new OutputStreamWriter(entry.getKey().getOutputStream()));
-                    writer.write("Connection Error!");
-                    writer.newLine();
-                    writer.flush();
-                    // Disconnect client by closing socket
-                    entry.getKey().close();
-                    //Remove client from clients hashmap
-                    clients.remove(entry.getKey());
+                    if(!entry.getKey().isClosed()){
+                        // Send message to client
+                        writer = new BufferedWriter(new OutputStreamWriter(entry.getKey().getOutputStream()));
+                        writer.write(message);
+                        writer.newLine();
+                        writer.flush();
+                    }
                 }
             }
 

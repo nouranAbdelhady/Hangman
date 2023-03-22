@@ -23,10 +23,15 @@ public class ClientHandler implements Runnable {
         try {
             while (true) {
                 String message = getServerMessage();
+                if (message.equals("Connection Error!")) {
+                    System.out.println("Connection Error!\n" +
+                            "You got disconnected \uD83D\uDE14");
+                    System.exit(0);
+                }
                 System.out.println(message);
             }
         } catch (SocketException e) {
-            System.out.println("You got disconnected :(");
+            System.out.println("You got disconnected \uD83D\uDE14");
             System.exit(0);
         } catch (IOException exception) {
             System.out.println(exception);

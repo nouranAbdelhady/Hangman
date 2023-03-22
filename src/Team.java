@@ -81,4 +81,11 @@ public class Team {
     public void setGameOver(Boolean gameOver) {
         isGameOver = gameOver;
     }
+    public String previewTeam(){
+        String teamPreview = "";
+        for (User player : players) {
+            teamPreview += ("\t"+player.getName()+"\n");
+        }
+        return teamPreview;
+    }
 }

@@ -455,7 +455,7 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                         }
                                                     }
                                                     // Do not return to main menu unless game is over (teamleader1 pressed 'P' and teamleader2 didnt press 'P')
-                                                    while(!currentUser.getCurrentTeam().getGameOver()){
+                                                    while(currentUser.getCurrentTeam()!=null && !currentUser.getCurrentTeam().getGameOver()){
 
                                                     }
                                                     // wait 3 seconds before returning to main menu (preview score)
@@ -511,11 +511,13 @@ public class MultiThreadedServer extends Server implements Runnable{
                                             }
 
                                             // Loop on current's user teams to check if game started
-                                            if(!currentUser.getCurrentTeam().getCanStartGame()){
+                                            if(currentUser.getCurrentTeam()!=null&&!currentUser.getCurrentTeam().getCanStartGame()){
                                                 serverService.sendMessageToClient(currentSocket, "Waiting for other players to join...");
                                             }
-                                            while (!currentUser.getCurrentTeam().getGameOver()){
+
+                                            while (currentUser.getCurrentTeam()!=null && !currentUser.getCurrentTeam().getGameOver()){
                                                 // wait;
+
                                             }
                                             // wait 3 seconds before returning to main menu (preview score)
                                             try {
@@ -541,39 +543,102 @@ public class MultiThreadedServer extends Server implements Runnable{
                 }
             }
         } catch (SocketException e) {
-            String printMessage = super.getClientNameList().get(currentSocket) + " got disconnected";
-            System.out.println(printMessage);       // Print message to server
+            if(super.getClientNameList().get(currentSocket)==null){
+                //do nothing
+            }else{
+                // Print message to server (client disconnected
+                String printMessage = super.getClientNameList().get(currentSocket) + " got disconnected";
+                System.out.println(printMessage);       // Print message to server
 
-            Team disconnectedUserTeam = null;
-            // Change state of user to offline
-            for(User user : super.getUsers().values()){
-                if(user.getUsername().equals(super.getClientNameList().get(currentSocket))){
-                    user.setOnline(false);
-                    disconnectedUserTeam=user.getCurrentTeam();
-                    disconnectedUserTeam.removePlayer(user);
-                }
-            }
-
-            // Remove team (if he is in one)
-            if(disconnectedUserTeam!=null){
-                Team opponentTeam=disconnectedUserTeam.getOpponentTeam();
-                // Send exception to both teams
-                try {
-                    serverService.diconnectAllPlayers(disconnectedUserTeam, super.getClientNameList());
-                    if(opponentTeam!=null){
-                        serverService.diconnectAllPlayers(opponentTeam, super.getClientNameList());
+                Team disconnectedUserTeam = null;
+                // Change state of user to offline
+                for(User user : super.getUsers().values()){
+                    if(user.getUsername().equals(super.getClientNameList().get(currentSocket))){
+                        user.setOnline(false);
+                        if (user.getCurrentTeam() != null){
+                            disconnectedUserTeam=user.getCurrentTeam();
+                            disconnectedUserTeam.removePlayer(user);
+                            user.setCurrentTeam(null);
+                        }
                     }
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+                }
+
+                // Remove user from clients list
+                super.getClients().remove(currentSocket);
+                super.getClientNameList().remove(currentSocket);
+
+                ArrayList<Socket> socketsToRemove = new ArrayList<>();
+                ArrayList<User> playersToRemove = new ArrayList<>();
+                // Remove team (if he is in one)
+                if(disconnectedUserTeam!=null){
+                    Team opponentTeam=null;
+                    if(disconnectedUserTeam.getOpponentTeam()!=null){
+                        opponentTeam=disconnectedUserTeam.getOpponentTeam();
+                    }
+                    // Send "Connection Error" to team members
+                    try {
+                        System.out.println("Team: "+disconnectedUserTeam.getTeamName()+" got disconnected");
+                        //System.out.println(disconnectedUserTeam.previewTeam());
+
+                        // get sockets to remove
+                        for(User user : disconnectedUserTeam.getPlayers()){
+                            // add user to remove list
+                            playersToRemove.add(user);
+                            // loop to get socket to remove
+                            for (Map.Entry<Socket, String> entry : getClientNameList().entrySet()) {
+                                //System.out.println("Value: "+entry.getValue());
+                                if (entry.getValue().equals(user.getUsername())) {
+                                    Socket socket = entry.getKey();
+                                    socketsToRemove.add(socket);
+                                    //System.out.println("Added socket: "+user.getUsername());
+                                }
+                            }
+                        }
+
+                        if(opponentTeam!=null){
+                            System.out.println("Team: "+opponentTeam.getTeamName()+" got disconnected");
+                            //System.out.println(opponentTeam.previewTeam());
+                            // get opponents' sockets
+                            for(User user : opponentTeam.getPlayers()){
+                                // add user to remove list
+                                playersToRemove.add(user);
+                                // loop to get socket
+                                for (Map.Entry<Socket, String> entry : getClientNameList().entrySet()) {
+                                    //System.out.println("Value: "+entry.getValue());
+                                    if (entry.getValue().equals(user.getUsername())) {
+                                        Socket socket = entry.getKey();
+                                        socketsToRemove.add(socket);
+                                        //System.out.println("Added socket: "+user.getUsername());
+                                    }
+                                }
+                            }
+                        }
+                        for (User user : playersToRemove) {
+                            user.setCurrentTeam(null);
+                            user.setOnline(false);
+                        }
+
+                        // remove sockets
+                        for(Socket socket : socketsToRemove){
+                            serverService.sendMessageToClient(socket, "Connection Error!");
+                            super.getClients().remove(socket);
+                            super.getClientNameList().remove(socket);
+                        }
+
+                        // remove teams
+                        super.getTeams().remove(disconnectedUserTeam.getTeamName());
+                        //System.out.println("Removed: "+disconnectedUserTeam.getTeamName());
+                        if(opponentTeam!=null){
+                            super.getTeams().remove(opponentTeam.getTeamName());
+                            //System.out.println("Removed: "+opponentTeam.getTeamName());
+                        }
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
             }
-
-            // Remove user from clients list
-            super.getClients().remove(currentSocket);
-            super.getClientNameList().remove(currentSocket);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }
