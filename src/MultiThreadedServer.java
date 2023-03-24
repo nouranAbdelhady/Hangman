@@ -263,7 +263,9 @@ public class MultiThreadedServer extends Server implements Runnable {
                                                                     // Equal number of players
                                                                     // Set can start game to true
                                                                     newTeam.setCanStartGame(true);
-                                                                    opponentTeam.setCanStartGame(true);
+                                                                    serverService.sendMessageToAllTeamMembers(newTeam, "Waiting for other team to start game....", super.getClientNameList());
+                                                                    serverService.sendMessageToAllTeamMembers(opponentTeam, "You have been selected!\nPress 'P' to start game", super.getClientNameList());
+                                                                    //opponentTeam.setCanStartGame(true);
                                                                 }
                                                                 // Start game
                                                                 Team teamA = currentUser.getCurrentTeam();
@@ -459,8 +461,12 @@ public class MultiThreadedServer extends Server implements Runnable {
                                                         }
                                                     }
                                                     // Do not return to main menu unless game is over (teamleader1 pressed 'P' and teamleader2 didnt press 'P')
-                                                    while(currentUser.getCurrentTeam()!=null && !currentUser.getCurrentTeam().getGameOver()){
-
+                                                    while(true){
+                                                        String thisUsername = super.getClientNameList().get(currentSocket);
+                                                        User thisUser = super.getUsers().get(thisUsername);
+                                                        if(thisUser.getCurrentTeam().getGameOver()){
+                                                            break;
+                                                        }
                                                     }
                                                     // wait 3 seconds before returning to main menu (preview score)
                                                     try {
@@ -526,9 +532,12 @@ public class MultiThreadedServer extends Server implements Runnable {
                                                 serverService.sendMessageToClient(currentSocket, "Waiting for other players to join...");
                                             }
 
-                                            while (currentUser.getCurrentTeam()!=null && !currentUser.getCurrentTeam().getGameOver()){
-                                                // wait;
-
+                                            while(true){
+                                                String thisUsername = super.getClientNameList().get(currentSocket);
+                                                User thisUser = super.getUsers().get(thisUsername);
+                                                if(thisUser.getCurrentTeam().getGameOver()){
+                                                    break;
+                                                }
                                             }
                                             // wait 3 seconds before returning to main menu (preview score)
                                             try {
