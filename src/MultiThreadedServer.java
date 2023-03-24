@@ -4,14 +4,16 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * This class is used to handle multiple client connections, and
  * opens a new thread for EACH socket connection
  */
-public class MultiThreadedServer extends Server implements Runnable{
+public class MultiThreadedServer extends Server implements Runnable {
 
     private final Socket currentSocket;    // Socket of client
+    private User currentUser;
 
     public MultiThreadedServer(Socket socket) throws IOException {
         this.currentSocket = socket;
@@ -20,19 +22,19 @@ public class MultiThreadedServer extends Server implements Runnable{
     @Override
     public void run() {
         try {
-            String welcome="Welcome to Hangman! \n";
+            String welcome = "Welcome to Hangman! \n";
             serverService.sendMessageToClient(currentSocket, welcome);
             // When first connected, menu is previewed to client
             // Handle client messages
-            while (true){
+            while (true) {
                 String menu = "1- Register \n" +
                         "2- Login";
                 serverService.sendMessageToClient(currentSocket, menu);
                 String option = serverService.getClientMessage(currentSocket);     // Read option sent from client
                 if (option.equals("-")) {     //'-' means that client chose to disconnect
-                    throw new SocketException();        // Throw exception to handle client disconnection
+                    throw new SocketException();
                 }
-                switch (option){
+                switch (option) {
                     case "1":
                         // Register
                         String registerMenu = "Registration: \n" +
@@ -52,6 +54,9 @@ public class MultiThreadedServer extends Server implements Runnable{
                         break;
                     case "2":
                         // Login
+                        // Check login response
+                        // If login response is true, start game menu
+                        // If login response is false, return to menu
                         String loginMenu = "Login: \n" +
                                 "Enter your username: ";
                         serverService.sendMessageToClient(currentSocket, loginMenu);
@@ -59,27 +64,25 @@ public class MultiThreadedServer extends Server implements Runnable{
                         serverService.sendMessageToClient(currentSocket, "Enter your password: ");
                         String passwordLogin = serverService.getClientMessage(currentSocket);
                         int loginResponse=serverService.checkCredentials(usernameLogin, passwordLogin);
+                        // Logged in successfully
                         if (loginResponse==200) {
                             serverService.sendMessageToClient(currentSocket, "Login successful!");
+                            currentUser = super.getUsers().get(usernameLogin);
+                            currentUser.setOnline(true);
+                            super.getClientNameList().put(currentSocket, usernameLogin);
                             String printMessage = usernameLogin + " has connected to server";
                             System.out.println(printMessage);       // Print message to server
-                            super.getClientNameList().put(currentSocket, usernameLogin);
 
-                            while (true){
-                                // Start game
+                            while(true) {
                                 String gameMenu = "\nMain Menu \n" +
                                         "1- Single Player \n" +
                                         "2- Multiplayer \n";
                                 serverService.sendMessageToClient(currentSocket, gameMenu);
-                                String gameOption = serverService.getClientMessage(currentSocket);
-
+                                String gameOption = serverService.getClientMessage(currentSocket);     // Read option sent from client
                                 if (gameOption.equals("-")) {     //'-' means that client chose to disconnect
-                                    throw new SocketException();        // Throw exception to handle client disconnection
+                                    throw new SocketException();
                                 }
-                                // Get current user
-                                User currentUser = super.getUsers().get(usernameLogin);
-                                currentUser.setOnline(true);
-                                switch (gameOption){
+                                switch (gameOption) {
                                     case "1":
                                         // Single Player
                                         serverService.sendMessageToClient(currentSocket, "Single Player");
@@ -190,10 +193,7 @@ public class MultiThreadedServer extends Server implements Runnable{
                                             if(multiplayerOption.equals("4")){
                                                 break;      // Go back to main menu
                                             }
-
                                             MultiPlayer multiPlayer = new MultiPlayer(super.getLookup(), super.getGameConfig());
-
-                                            // Handle menu
                                             switch (multiplayerOption){
                                                 case "1":
                                                     // Create new team
@@ -214,7 +214,7 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     currentUser.setCurrentTeam(newTeam);
                                                     // Add team to teams list
                                                     super.getTeams().put(teamName, newTeam);
-
+                                                    System.out.println("New team created: "+ newTeam.getTeamName());
                                                     // Send message to client that team was created, and
                                                     // he is waiting for others to join by sending them the team name
                                                     serverService.sendMessageToClient(currentSocket, "Team created!");
@@ -336,6 +336,10 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                                         // Get guess from client
                                                                         serverService.sendMessageToClient(targetedSocket, "Enter a character: ");
                                                                         String guess = serverService.getClientMessage(targetedSocket);
+
+                                                                        if (guess.equals("-")) {     //'-' means that client chose to disconnect
+                                                                            throw new SocketException();
+                                                                        }
 
                                                                         // If more than 1 character is entered, preview error message
                                                                         while (guess.length()>1)
@@ -469,7 +473,6 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     // Join existing team
                                                     serverService.sendMessageToClient(currentSocket, "Enter team name: ");
                                                     String teamNameToJoin = serverService.getClientMessage(currentSocket);
-
                                                     while (true)
                                                     {
                                                         // Check if team exists
@@ -487,6 +490,7 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                             teamNameToJoin = serverService.getClientMessage(currentSocket);
                                                             continue;
                                                         }
+
                                                         break;
                                                     }
                                                     // If team exists AND not full, add user to team
@@ -500,16 +504,23 @@ public class MultiThreadedServer extends Server implements Runnable{
                                                     currentUser.setCurrentTeam(super.getTeams().get(teamNameToJoin));
                                                     // Send message to client that he joined the team
                                                     serverService.sendMessageToClient(currentSocket, "You joined the team!");
+                                                    System.out.println(currentUser.getUsername()+" joined team "+teamNameToJoin);
+                                                    //System.out.println("Update: "+super.getTeams().get(teamNameToJoin).previewTeam());
                                                     break;
                                                 case "3":
                                                     // Join game room
-                                                    serverService.sendMessageToClient(currentSocket, "Game Room");
+                                                    serverService.sendMessageToClient(currentSocket, "Join game room");
                                                     break;
-                                                default:
-                                                    serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
+                                                default: serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
                                                     break;
                                             }
 
+                                            // Game finished
+                                            /*
+                                            if (multiplayerOption.equals("1") || multiplayerOption.equals("2")){
+                                                break;      // Go back to main menu after game
+                                            }
+                                             */
                                             // Loop on current's user teams to check if game started
                                             if(currentUser.getCurrentTeam()!=null&&!currentUser.getCurrentTeam().getCanStartGame()){
                                                 serverService.sendMessageToClient(currentSocket, "Waiting for other players to join...");
@@ -531,10 +542,14 @@ public class MultiThreadedServer extends Server implements Runnable{
                                     default:
                                         serverService.sendMessageToClient(currentSocket, "Invalid option. Please try again.");
                                         break;
+
                                 }
                             }
-                        } else {
+                        }
+                        else{
+                            // Login failed
                             serverService.sendMessageToClient(currentSocket, loginResponse+" - Login Failed!");
+                            // Return to menu
                         }
                         break;
                     default:
@@ -542,103 +557,92 @@ public class MultiThreadedServer extends Server implements Runnable{
                         break;
                 }
             }
+
+
         } catch (SocketException e) {
-            if(super.getClientNameList().get(currentSocket)==null){
-                //do nothing
-            }else{
-                // Print message to server (client disconnected
-                String printMessage = super.getClientNameList().get(currentSocket) + " got disconnected";
-                System.out.println(printMessage);       // Print message to server
 
-                Team disconnectedUserTeam = null;
-                // Change state of user to offline
-                for(User user : super.getUsers().values()){
-                    if(user.getUsername().equals(super.getClientNameList().get(currentSocket))){
-                        user.setOnline(false);
-                        if (user.getCurrentTeam() != null){
-                            disconnectedUserTeam=user.getCurrentTeam();
-                            disconnectedUserTeam.removePlayer(user);
-                            user.setCurrentTeam(null);
+            // If user is in a team, disconnect all team members
+            Team userTeam = currentUser.getCurrentTeam();
+            this.disconnectClient(currentSocket);
+            ArrayList<Socket> socketsToRemove = new ArrayList<>();
+            ArrayList<User> playersToRemove = new ArrayList<>();
+            if (userTeam != null) {
+                // Disconnect all team members
+                for (User user : userTeam.getPlayers()) {
+                    // Get socket of team member
+                    Set<Map.Entry<Socket, String>> list = getClientNameList().entrySet();
+                    for (Map.Entry<Socket, String> entry : list) {
+                        if (entry.getValue().equals(user.getUsername())) {
+                            if(entry.getKey()!=currentSocket){      // avoid disconnecting currentSocket again
+                                socketsToRemove.add(entry.getKey());
+                            }
                         }
                     }
+                    playersToRemove.add(user);
                 }
+                // Remove team from list of teams
+                super.getTeams().remove(userTeam.getTeamName());
 
-                // Remove user from clients list
-                super.getClients().remove(currentSocket);
-                super.getClientNameList().remove(currentSocket);
-
-                ArrayList<Socket> socketsToRemove = new ArrayList<>();
-                ArrayList<User> playersToRemove = new ArrayList<>();
-                // Remove team (if he is in one)
-                if(disconnectedUserTeam!=null){
-                    Team opponentTeam=null;
-                    if(disconnectedUserTeam.getOpponentTeam()!=null){
-                        opponentTeam=disconnectedUserTeam.getOpponentTeam();
-                    }
-                    // Send "Connection Error" to team members
-                    try {
-                        System.out.println("Team: "+disconnectedUserTeam.getTeamName()+" got disconnected");
-                        //System.out.println(disconnectedUserTeam.previewTeam());
-
-                        // get sockets to remove
-                        for(User user : disconnectedUserTeam.getPlayers()){
-                            // add user to remove list
-                            playersToRemove.add(user);
-                            // loop to get socket to remove
-                            for (Map.Entry<Socket, String> entry : getClientNameList().entrySet()) {
-                                //System.out.println("Value: "+entry.getValue());
-                                if (entry.getValue().equals(user.getUsername())) {
-                                    Socket socket = entry.getKey();
-                                    socketsToRemove.add(socket);
-                                    //System.out.println("Added socket: "+user.getUsername());
-                                }
+                // Disconnect opponent team
+                Team opponentTeam = userTeam.getOpponentTeam();
+                if(opponentTeam!=null){
+                    ArrayList<User> opponentTeamMembers = opponentTeam.getPlayers();
+                    for (User user : opponentTeamMembers) {
+                        // Get socket of team member
+                        Set<Map.Entry<Socket, String>> list = getClientNameList().entrySet();
+                        for (Map.Entry<Socket, String> entry : list) {
+                            if (entry.getValue().equals(user.getUsername())) {
+                                socketsToRemove.add(entry.getKey());
                             }
                         }
-
-                        if(opponentTeam!=null){
-                            System.out.println("Team: "+opponentTeam.getTeamName()+" got disconnected");
-                            //System.out.println(opponentTeam.previewTeam());
-                            // get opponents' sockets
-                            for(User user : opponentTeam.getPlayers()){
-                                // add user to remove list
-                                playersToRemove.add(user);
-                                // loop to get socket
-                                for (Map.Entry<Socket, String> entry : getClientNameList().entrySet()) {
-                                    //System.out.println("Value: "+entry.getValue());
-                                    if (entry.getValue().equals(user.getUsername())) {
-                                        Socket socket = entry.getKey();
-                                        socketsToRemove.add(socket);
-                                        //System.out.println("Added socket: "+user.getUsername());
-                                    }
-                                }
-                            }
-                        }
-                        for (User user : playersToRemove) {
-                            user.setCurrentTeam(null);
-                            user.setOnline(false);
-                        }
-
-                        // remove sockets
-                        for(Socket socket : socketsToRemove){
-                            serverService.sendMessageToClient(socket, "Connection Error!");
-                            super.getClients().remove(socket);
-                            super.getClientNameList().remove(socket);
-                        }
-
-                        // remove teams
-                        super.getTeams().remove(disconnectedUserTeam.getTeamName());
-                        //System.out.println("Removed: "+disconnectedUserTeam.getTeamName());
-                        if(opponentTeam!=null){
-                            super.getTeams().remove(opponentTeam.getTeamName());
-                            //System.out.println("Removed: "+opponentTeam.getTeamName());
-                        }
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
+                        playersToRemove.add(user);
                     }
+                    // Remove team from list of teams
+                    super.getTeams().remove(opponentTeam.getTeamName());
+                }
+            }
+
+            // disconnect all team members
+            for(Socket socket : socketsToRemove){
+                if(!socket.isClosed()){
+                    this.disconnectClient(socket);
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch(NullPointerException e)
+        {
+            //System.out.print("NullPointerException Caught");
         }
+    }
+
+    public void disconnectClient(Socket client) {
+        // Disconnect socket
+        // Print message to server (client disconnected
+        String printMessage = super.getClientNameList().get(client) + " got disconnected";
+        System.out.println(printMessage);       // Print message to server
+
+        // Reset user's state and set online to false
+        String username=super.getClientNameList().get(client) ;
+        if(username!=null){
+            User user = super.getUsers().get(username);
+            user.setOnline(false);
+
+            //System.out.println("Offline: "+user.previewUserContent());
+            if (user.getCurrentTeam() != null) {
+                user.getCurrentTeam().removePlayer(user);
+                user.setCurrentTeam(null);
+            }
+        }
+        if(!client.isClosed()){
+            try {
+                serverService.sendMessageToClient(client, "Connection Error!");
+                client.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        super.getClientNameList().remove(client);     // Remove client from list
+        super.getClients().remove(client);     // Remove client from list
     }
 }
