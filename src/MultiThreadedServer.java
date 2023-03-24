@@ -439,6 +439,18 @@ public class MultiThreadedServer extends Server implements Runnable {
                                                                 serverService.sendMessageToClient(currentSocket, "Enter opponent's team name: ");
                                                                 String opponentTeamName = serverService.getClientMessage(currentSocket);
 
+                                                                while(opponentTeamName.equals(newTeam.getTeamName())){
+                                                                    serverService.sendMessageToClient(currentSocket, "You can't play against yourself! Please enter another team name: ");
+                                                                    opponentTeamName = serverService.getClientMessage(currentSocket);
+                                                                    while (!super.getTeams().containsKey(opponentTeamName))
+                                                                    {
+                                                                        if(!super.getTeams().containsKey(opponentTeamName)){
+                                                                            serverService.sendMessageToClient(currentSocket, "Team doesn't exist, please enter another name: ");
+                                                                        }
+                                                                        opponentTeamName = serverService.getClientMessage(currentSocket);
+                                                                    }
+                                                                }
+
                                                                 while (!super.getTeams().containsKey(opponentTeamName))
                                                                 {
                                                                     if(!super.getTeams().containsKey(opponentTeamName)){
@@ -648,7 +660,7 @@ public class MultiThreadedServer extends Server implements Runnable {
                 serverService.sendMessageToClient(client, "Connection Error!");
                 client.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
         super.getClientNameList().remove(client);     // Remove client from list
